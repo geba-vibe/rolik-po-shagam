@@ -286,6 +286,48 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
 
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-size: 14px; z-index: 60; max-width: calc(100% - 32px); }
 
+/* шпаргалка: вкладки в окне «?», схемы, полосы хронометража, чек-лист */
+.hpane { display: grid; gap: 10px; }
+.help-top .tabs { flex-wrap: nowrap; }
+.help-top .tab { white-space: nowrap; }
+.linkish { border: 0; background: none; padding: 0; cursor: pointer; color: var(--accent); font-size: 13px; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 3px; }
+.linkish:hover { text-decoration-color: currentColor; }
+.figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 18px 16px; margin: 10px 0; }
+.fig { margin: 0; display: grid; gap: 8px; align-content: start; }
+.fig figcaption { font-size: 14px; line-height: 1.45; }
+.help ul.parts { list-style: none; padding-left: 0; gap: 6px; }
+.tl-box { display: grid; gap: 6px; margin: 12px 0 4px; max-width: 720px; }
+.tl-h { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.tl { display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; }
+.tl span { min-width: 4px; }
+.tl-k { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; color: var(--muted); }
+.tl-k i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.c-hook { background: var(--rec); } .c-intro { background: var(--warn); } .c-main { background: var(--accent); } .c-turn { background: var(--muted); } .c-end { background: var(--ok); }
+.help ul.chk { list-style: none; padding-left: 0; gap: 2px; }
+.chk label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; padding: 3px 0; }
+.chk input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; }
+.dg { display: block; width: 100%; height: auto; background: var(--bg); border-radius: 8px; }
+.dg .pp { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.4; }
+.dg .ink { fill: var(--ink); }
+.dg .ln { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.dg .lamp { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.6; }
+.dg .ray { stroke: var(--warn); stroke-width: 1.6; stroke-linecap: round; }
+.dg .beam { fill: var(--warn); opacity: .2; }
+.dg .beam2 { fill: var(--warn); opacity: .1; }
+.dg .win { stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+.dg .wall { stroke: var(--muted); stroke-width: 2; opacity: .5; }
+.dg .refl { fill: var(--sheet); stroke: var(--muted); stroke-width: 1.4; }
+.dg .ringl { fill: none; stroke: var(--warn); stroke-width: 5; }
+.dg .frame { fill: var(--sheet); stroke: var(--rule); stroke-width: 1.5; }
+.dg .grid { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 4; opacity: .8; }
+.dg .okl { stroke: var(--ok); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.dg .badl { stroke: var(--rec); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.dg .zone { fill: var(--rec); opacity: .16; }
+.dg text { font-family: var(--f-body); font-size: 11px; fill: var(--muted); }
+.dg text.ok { fill: var(--ok); }
+.dg text.bad { fill: var(--rec); }
+.dg text.b { fill: var(--ink); font-weight: 600; }
+
 @media (max-width: 760px) {
   .top { flex-wrap: nowrap; gap: 8px; }
   .brand h1 { font-size: 19px; letter-spacing: .04em; }
@@ -323,7 +365,7 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
           <button class="mi" id="import-btn" type="button">Загрузить из файла</button>
           <input type="file" id="import-file" accept=".json,application/json" hidden>
           </div></div>
-      <button class="btn quiet help-q" id="help-btn" type="button" aria-expanded="false" aria-controls="help" aria-label="Как пользоваться" title="Как пользоваться">?</button>
+      <button class="btn quiet help-q" id="help-btn" type="button" aria-expanded="false" aria-controls="help" aria-label="Инструкция и шпаргалка" title="Инструкция и шпаргалка">?</button>
       <button class="btn quiet" id="theme-btn" type="button" aria-label="Сменить тему">◐</button>
     </div>
   </header>
@@ -338,7 +380,8 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
     <div><button class="btn quiet" type="button" id="picker-close">Отмена</button></div>
   </section>
   <section class="help" id="help" hidden aria-label="Как пользоваться">
-    <div class="help-top"><h2>Как пользоваться</h2><button class="btn quiet" type="button" id="help-close">Закрыть</button></div>
+    <div class="help-top"><div class="tabs" role="tablist"><button class="tab" role="tab" type="button" data-hpane="how" aria-selected="true">Инструкция</button><button class="tab" role="tab" type="button" data-hpane="tips" aria-selected="false">Шпаргалка</button></div><button class="btn quiet" type="button" id="help-close">Закрыть</button></div>
+  <div class="hpane" id="help-how">
     <p class="help-lead">«Ролик по шагам» — тетрадь для сценариев роликов. Каждый ролик — отдельный лист: что вы говорите, что видно в кадре и сколько это длится. Всё сохраняется само, кнопки «Сохранить» нет.</p>
     <details open><summary>1. Начать новый ролик</summary>
       <ol><li>Первая карточка в ленте — <b>«+ Новый ролик»</b>. Нажмите её.</li>
@@ -378,12 +421,186 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
       <li><b>Зеркально</b> — если ставите телефон или планшет под стекло суфлёра.</li>
       <li><b>Закрыть</b> — кнопкой или клавишей Esc.</li></ul></details>
     <details><summary>8. Где хранятся ролики</summary>
-      <p>У приложения две версии, и они не связаны между собой:</p>
-      <ul><li><b>Страница на claude.ai</b> — ролики хранятся в вашем аккаунте Claude, их видно с любого компьютера и телефона. Меню <b>«Файл»</b> в шапке → «Скачать ролики файлом» сохраняет копию.</li>
-      <li><b>Файл «Раскадровка.html»</b> на компьютере — работает без интернета, но ролики хранятся только в этом браузере. Меню <b>«Файл»</b> в шапке → «Сохранить копию в файл» и «Загрузить из файла» переносят их на другой компьютер или в другую версию.</li></ul>
-      <p>Проще всего работать на странице: Claude сам переносит ваши правки оттуда в файл, когда вы просите что-то поменять.</p></details>
-    <details><summary>9. Как попросить Claude помочь</summary>
-      <p>Напишите Claude обычными словами, например: «добавь ролик про выбор прораба», «сократи крючок во второй серии», «придумай пять названий для серии 1». Claude внесёт правки в обе версии.</p></details>
+      <p>Ролики хранятся только на этом устройстве, в этом браузере. В интернет они не отправляются, и другие люди их не видят, даже если откроют этот же сайт.</p>
+      <ul><li><b>Сохраняйте копию</b> время от времени: меню <b>«Файл»</b> в шапке → «Сохранить копию в файл». Если очистить данные браузера или кеш Telegram, ролики пропадут, а из копии их легко вернуть.</li>
+      <li><b>Перенести на другой телефон или компьютер</b>: сохраните копию в файл, перешлите его себе (например, в «Избранное» в Telegram) и на новом устройстве откройте <b>«Файл»</b> → «Загрузить из файла». Одинаковые ролики не задвоятся: останется более свежая версия.</li>
+      <li>Сайт в браузере и тот же сайт внутри Telegram хранят ролики отдельно. Переносить между ними — тоже файлом.</li>
+      <li><b>Значок на экране телефона</b>: в Safari «Поделиться» → «На экран „Домой“», в Chrome ⋮ → «Добавить на главный экран».</li></ul></details>
+      </div>
+  <div class="hpane" id="help-tips" hidden>
+    <p class="help-lead">Коротко о главном для первых роликов: как построить сюжет, поставить свет и камеру, записать звук и что проверить перед съёмкой. Хватит обычного телефона.</p>
+    <details id="t-structure"><summary>Из каких частей состоит ролик, который смотрят</summary>
+      <p>У любого ролика три задачи: зацепить, удержать и закончить так, чтобы захотелось ещё. Для этого его собирают из частей — такие же части есть в сценарии на листе ролика.</p>
+      <ul class="parts">
+        <li><b>Крючок</b> — первые секунды. Обещание или загадка, ради которой досматривают. На YouTube до 30 секунд, в коротких роликах 1–2 секунды.</li>
+        <li><b>Вступление</b> — кто вы и что зритель получит, 15–30 секунд. Без долгого «всем привет» и без просьб подписаться в самом начале.</li>
+        <li><b>Основная часть</b> — суть, разбитая на 3–5 шагов. У каждого шага свой маленький крючок: «а дальше началось самое интересное».</li>
+        <li><b>Пример</b> — показать на деле: до и после, цифры, конкретный случай. Пример убеждает лучше любых объяснений.</li>
+        <li><b>Поворот</b> — проблема, сомнение или неожиданность. Ломает ровный рассказ и возвращает внимание. Ставьте ближе ко второй половине.</li>
+        <li><b>Перебивка</b> — короткая смена картинки или темпа: другой план, вставка, шутка. В длинном ролике — каждые 30–60 секунд.</li>
+        <li><b>Призыв</b> — одно действие: вопрос в комментарии или следующий ролик. Одно, а не пять сразу.</li>
+        <li><b>Финал</b> — итог одной фразой и крючок на следующий ролик. Заканчивайте на сильной фразе, а не на «ну, вот и всё».</li>
+      </ul>
+      <div class="tl-box">
+        <div class="tl-h">YouTube, 10 минут</div>
+        <div class="tl" aria-hidden="true"><span class="c-hook" style="flex:30"></span><span class="c-intro" style="flex:30"></span><span class="c-main" style="flex:450"></span><span class="c-turn" style="flex:60"></span><span class="c-end" style="flex:30"></span></div>
+        <div class="tl-k"><span><i class="c-hook"></i>Крючок 0:00–0:30</span><span><i class="c-intro"></i>Вступление до 1:00</span><span><i class="c-main"></i>Три части до 8:30</span><span><i class="c-turn"></i>Поворот до 9:30</span><span><i class="c-end"></i>Финал</span></div>
+        <div class="tl-h">Shorts, TikTok, Reels — 45 секунд</div>
+        <div class="tl" aria-hidden="true"><span class="c-hook" style="flex:2"></span><span class="c-main" style="flex:28"></span><span class="c-turn" style="flex:10"></span><span class="c-end" style="flex:5"></span></div>
+        <div class="tl-k"><span><i class="c-hook"></i>Крючок 1–2 с</span><span><i class="c-main"></i>Суть до 30 с</span><span><i class="c-turn"></i>Поворот до 40 с</span><span><i class="c-end"></i>Призыв</span></div>
+      </div>
+      <p>Готовые заготовки для обоих форматов появляются, когда вы нажимаете «+ Новый ролик».</p></details>
+
+    <details id="t-hook"><summary>Крючок: шесть способов начать</summary>
+      <p>Зритель решает, остаться или нет, за первые секунды. Хороший крючок честно обещает то, что будет в ролике.</p>
+      <ol>
+        <li><b>Результат вперёд.</b> Сначала покажите «после», потом расскажите, как к этому пришли. <i>«Вот что стало с кухней за три недели».</i></li>
+        <li><b>Вопрос, который у зрителя уже есть.</b> <i>«Можно ли сделать ремонт однушки за полмиллиона?»</i></li>
+        <li><b>Цифра или факт.</b> <i>«Эта ошибка стоит сорок тысяч, и её делают почти все».</i></li>
+        <li><b>Предупреждение.</b> <i>«Не покупайте ламинат, пока не проверили пол».</i></li>
+        <li><b>С середины действия.</b> Запись уже идёт, вы уже что-то делаете — без «привет, сегодня я расскажу».</li>
+        <li><b>Личная ставка.</b> <i>«Я никогда этого не делал, и у меня есть неделя».</i></li>
+      </ol>
+      <p>Главное правило: обещание из крючка выполняется в ролике. Если обмануть, зритель уйдёт и больше не вернётся.</p></details>
+
+    <details id="t-hold"><summary>Как удержать зрителя до конца</summary>
+      <ul>
+        <li><b>Сразу к делу.</b> Первые 30 секунд решают почти всё: без заставок и длинных приветствий.</li>
+        <li><b>Меняйте картинку</b> каждые 5–10 секунд, в коротких роликах — каждые 2–3: другой план, перебивка, надпись.</li>
+        <li><b>Открытая петля.</b> «В конце покажу, сколько это стоило» — и обязательно покажите.</li>
+        <li><b>Маленькие крючки между частями:</b> «и вот тут начались проблемы».</li>
+        <li><b>Вырезайте пустое:</b> паузы, повторы, «эээ». Ролик станет короче и живее.</li>
+        <li><b>Короткие фразы.</b> Одна мысль — одно предложение, так легче слушать.</li>
+      </ul></details>
+
+    <details id="t-light"><summary>Свет: четыре простые схемы</summary>
+      <p>Свет важнее камеры: с хорошим светом и телефон снимает красиво. На схемах вид сверху, камера внизу.</p>
+      <div class="figs">
+        <figure class="fig"><div data-dg="window"></div><figcaption><b>Окно спереди-сбоку.</b> Бесплатно и красивее всего. Встаньте к окну под углом около 45°: одна сторона лица светлее, другая чуть в тени — лицо объёмное. Снимайте днём.</figcaption></figure>
+        <figure class="fig"><div data-dg="reflector"></div><figcaption><b>Лампа и белый лист.</b> Лампа спереди-сбоку, с другой стороны — белый картон, простыня или дверь шкафа. Он мягко подсвечивает тень.</figcaption></figure>
+        <figure class="fig"><div data-dg="three"></div><figcaption><b>Три источника.</b> Основной — спереди-сбоку, заполняющий — с другой стороны и слабее, контровой — сзади, отделяет вас от фона. Схема для тех, у кого уже есть 2–3 лампы.</figcaption></figure>
+        <figure class="fig"><div data-dg="ring"></div><figcaption><b>Кольцевая лампа.</b> Самый простой вариант: свет ровный, без теней. Хорош для коротких роликов. В очках бывает блик — поднимите лампу чуть выше.</figcaption></figure>
+      </div>
+      <p><b>Так не надо:</b></p>
+      <div class="figs">
+        <figure class="fig"><div data-dg="bad-window"></div><figcaption><b>Окно за спиной.</b> Телефон подстраивается под яркое окно, и лицо становится тёмным силуэтом. Развернитесь к окну лицом.</figcaption></figure>
+        <figure class="fig"><div data-dg="bad-top"></div><figcaption><b>Одна лампа над головой.</b> Под глазами и носом тёмные тени, лицо выглядит усталым. Для разговора в кадре выключите её и встаньте к окну.</figcaption></figure>
+      </div>
+      <ul>
+        <li><b>Один цвет света в кадре.</b> Не смешивайте дневной свет из окна и жёлтую лампу на лице — кожа станет пятнистой.</li>
+        <li><b>Солнце прямо в лицо</b> даёт резкие тени и прищур. Лучше облачный день или лёгкая штора на окне.</li>
+        <li><b>Свет меняется.</b> Снимайте одну сцену за раз, пока за окном не стемнело.</li>
+      </ul></details>
+
+    <details id="t-camera"><summary>Камера и кадр</summary>
+      <div class="figs">
+        <figure class="fig"><div data-dg="thirds"></div><figcaption><b>Правило третей.</b> Мысленно разделите кадр на три части. Глаза — на верхней линии, вы — чуть в стороне от центра. На свободной части видно, где вы находитесь.</figcaption></figure>
+        <figure class="fig"><div data-dg="height"></div><figcaption><b>Камера на уровне глаз.</b> Снизу виден подбородок, сверху вы кажетесь меньше. Ставьте телефон на штатив или на стопку книг.</figcaption></figure>
+        <figure class="fig"><div data-dg="plans"></div><figcaption><b>Три плана.</b> Средний — основной для разговора. Крупный — для эмоций и важных фраз. Общий — показать место. Чередуйте их, и смотреть станет легче.</figcaption></figure>
+        <figure class="fig"><div data-dg="safe"></div><figcaption><b>Горизонтально или вертикально.</b> YouTube — горизонтально, Shorts, TikTok и Reels — вертикально. В вертикальном видео снизу и справа всё закроют подписи и кнопки: держите лицо и надписи ближе к середине.</figcaption></figure>
+      </div>
+      <ul>
+        <li><b>Отойдите от стены</b> на 1–2 метра: кадр станет глубже, а тень за спиной пропадёт.</li>
+        <li><b>Фон.</b> Уберите из кадра лишнее: провода, пакеты, сушилку. Одна-две интересные вещи на фоне лучше, чем голая стена.</li>
+        <li><b>Не приближайте пальцами.</b> Цифровое приближение портит картинку — лучше подойдите ближе.</li>
+      </ul></details>
+
+    <details id="t-sound"><summary>Звук</summary>
+      <p>Плохую картинку досмотрят, плохой звук — нет. Поэтому звуку стоит уделить больше внимания, чем камере.</p>
+      <ul>
+        <li><b>Микрофон ближе ко рту.</b> Лучше всего петличка у второй пуговицы. Без неё — телефон не дальше метра от вас.</li>
+        <li><b>Пустая комната гудит эхом.</b> Его гасят ковёр, одеяло, шторы, мягкая мебель. Встаньте ближе к мягким вещам.</li>
+        <li><b>Выключите шум:</b> холодильник, вентилятор, кондиционер. Закройте окно. После съёмки включите холодильник обратно.</li>
+        <li><b>Пять секунд тишины</b> перед первым дублем — по ним при монтаже убирают фоновый шум.</li>
+        <li><b>Прослушайте первый дубль в наушниках,</b> прежде чем снимать всё остальное.</li>
+        <li><b>Музыка</b> при монтаже — в 3–4 раза тише голоса, лучше без слов. Берите только свободную, например из фонотеки YouTube.</li>
+      </ul></details>
+
+    <details id="t-phone"><summary>Настройки телефона</summary>
+      <ul>
+        <li><b>Основная камера,</b> а не фронтальная: она снимает заметно лучше.</li>
+        <li><b>Протрите объектив</b> — мутная картинка чаще всего из-за отпечатка пальца.</li>
+        <li><b>Качество</b> — 1080p или 4K, 30 кадров в секунду. Одинаково во всех роликах, чтобы куски склеивались ровно. 4K занимает в несколько раз больше места.</li>
+        <li><b>Закрепите яркость и фокус:</b> долгое нажатие на лицо на экране. Иначе картинка будет «дышать» и светлеть-темнеть.</li>
+        <li><b>Режим «Не беспокоить»</b> — звонок или уведомление испортят дубль.</li>
+        <li><b>Заряд и память.</b> Полная батарея, свободное место, пауэрбанк под рукой.</li>
+        <li><b>Штатив</b> с креплением для телефона — недорогой и очень облегчает жизнь.</li>
+      </ul></details>
+
+    <details id="t-talk"><summary>Как говорить в камеру</summary>
+      <ul>
+        <li><b>Смотрите в объектив,</b> а не на себя в экране. Помогает маленькая наклейка рядом с объективом.</li>
+        <li><b>Говорите одному человеку.</b> Представьте знакомого и рассказывайте ему, а не «дорогим подписчикам».</li>
+        <li><b>Чуть бодрее, чем в жизни:</b> камера «съедает» часть эмоций.</li>
+        <li><b>Снимайте кусками</b> по 1–3 фразы. Ошиблись — помолчите две секунды и начните фразу заново, не останавливая запись. Лишнее вырежете при монтаже.</li>
+        <li><b>Длинный текст — с суфлёра.</b> Кнопка «Суфлёр» на листе ролика. Второй телефон или планшет с суфлёром ставьте прямо под объектив.</li>
+        <li><b>Займите руки</b> чем-то по делу: блокнотом, инструментом, предметом, о котором говорите.</li>
+        <li><b>Первый дубль — разминочный.</b> Дальше пойдёт свободнее, это нормально.</li>
+      </ul></details>
+
+    <details id="t-broll"><summary>Перебивки: что доснять</summary>
+      <p>Перебивки — короткие кадры без слов, которые вставляют поверх речи. С ними ролик живой, а склейки незаметны. Снимайте каждую 5–10 секунд, медленно и плавно, по 2–3 варианта.</p>
+      <ul>
+        <li>Руки за работой крупным планом.</li>
+        <li>Деталь предмета, о котором говорите.</li>
+        <li>Общий план места: комната, улица, мастерская.</li>
+        <li>Проход по помещению с камерой в руке.</li>
+        <li>«До» и «после» с одной и той же точки — запомните, откуда снимали.</li>
+        <li>Запись экрана, если показываете сайт, приложение или расчёт.</li>
+        <li>Ваша реакция без слов: удивление, улыбка, задумчивость.</li>
+      </ul>
+      <p>Список кадров ведите на вкладке «Кадры» в ролике, а «План съёмки» соберёт их по местам.</p></details>
+
+    <details id="t-edit"><summary>Монтаж: самое главное</summary>
+      <ul>
+        <li><b>Сначала соберите речь,</b> потом добавляйте перебивки, надписи и музыку.</li>
+        <li><b>Режьте паузы и повторы</b> — ролик обычно становится на треть короче и бодрее.</li>
+        <li><b>Субтитры.</b> Короткие ролики часто смотрят без звука: крупные слова в середине кадра.</li>
+        <li><b>Первые секунды коротких роликов</b> — самые сильные, без заставок и логотипов.</li>
+        <li><b>Проверьте на телефоне:</b> так ролик увидит большинство зрителей.</li>
+        <li><b>Программа</b> — любая простая: CapCut, VN, iMovie. Начинать можно прямо в телефоне.</li>
+      </ul></details>
+
+    <details id="t-pack"><summary>Название и превью</summary>
+      <ul>
+        <li><b>Работают вместе.</b> Превью показывает, название объясняет — не повторяйте в них одно и то же.</li>
+        <li><b>Превью:</b> лицо с понятной эмоцией, 2–4 крупных слова и один ясный предмет. Проверьте, читается ли картинка размером с ноготь.</li>
+        <li><b>Название:</b> главное — в первых 40–60 знаках. Конкретика работает лучше общих слов: срок, сумма, результат.</li>
+        <li><b>Несколько вариантов.</b> Напишите 3–5 на вкладке «Упаковка» и выберите на следующий день свежим взглядом.</li>
+        <li><b>Не обещайте того, чего нет в ролике.</b></li>
+        <li><b>Описание:</b> 2–3 строки о ролике и главы. Главы для YouTube собираются сами на вкладке «Упаковка».</li>
+      </ul></details>
+
+    <details id="t-check"><summary>Чек-лист перед съёмкой</summary>
+      <p>Галочки сохраняются на этом устройстве. Перед новой съёмкой снимите их кнопкой внизу.</p>
+      <ul class="chk" id="chk">
+        <li><label><input type="checkbox" data-chk="battery"> Телефон заряжен, в памяти есть место</label></li>
+        <li><label><input type="checkbox" data-chk="lens"> Объектив протёрт</label></li>
+        <li><label><input type="checkbox" data-chk="dnd"> Включён режим «Не беспокоить»</label></li>
+        <li><label><input type="checkbox" data-chk="mic"> Микрофон работает, пробный дубль прослушан</label></li>
+        <li><label><input type="checkbox" data-chk="noise"> Холодильник и вентилятор выключены, окна закрыты</label></li>
+        <li><label><input type="checkbox" data-chk="light"> Окно спереди-сбоку, лишние лампы выключены</label></li>
+        <li><label><input type="checkbox" data-chk="frame"> Камера на уровне глаз, фон прибран</label></li>
+        <li><label><input type="checkbox" data-chk="focus"> Яркость и фокус закреплены</label></li>
+        <li><label><input type="checkbox" data-chk="text"> Пропуски в [скобках] заполнены, текст в суфлёре</label></li>
+        <li><label><input type="checkbox" data-chk="broll"> Список перебивок под рукой</label></li>
+        <li><label><input type="checkbox" data-chk="water"> Стакан воды рядом</label></li>
+      </ul>
+      <div class="add-row"><button class="btn" type="button" id="chk-reset">Снять все галочки</button><span class="count" id="chk-n"></span></div>
+      <p>После съёмки — включить холодильник.</p></details>
+
+    <details id="t-mistakes"><summary>Частые ошибки новичков</summary>
+      <ul>
+        <li>Долгое вступление: «всем привет, меня зовут…, сегодня я расскажу…».</li>
+        <li>Окно или лампа за спиной.</li>
+        <li>Звук со встроенного микрофона с трёх метров в пустой комнате.</li>
+        <li>Камера снизу или фронтальная камера на вытянутой руке для длинного ролика.</li>
+        <li>Один и тот же план две минуты подряд, без перебивок.</li>
+        <li>Обещание в названии, которого нет в ролике.</li>
+        <li>Ждать идеальной техники вместо того, чтобы начать. Первые десять роликов — тренировка, и это нормально.</li>
+        <li>Расстраиваться из-за первых просмотров. Каналы растут медленно — важнее выпускать ролики регулярно.</li>
+      </ul></details>
+  </div>
   </section>
   <main id="main"></main>
 </div>
@@ -678,7 +895,99 @@ $("#tpls").addEventListener("click", (e) => {
   setTimeout(() => { const ti = $("#f-title"); if (ti) ti.focus(); }, 0);
 });
 $("#picker-close").addEventListener("click", () => ($("#picker").hidden = true));
-function setHelp(open) { const h = $("#help"); h.hidden = !open; $("#help-btn").setAttribute("aria-expanded", String(open)); if (open) h.scrollIntoView({ block: "nearest" }); }
+
+// ---------- шпаргалка: схемы света и кадра (рисуются один раз при первом открытии; цвета — из темы) ----------
+const DG = (() => {
+  const T = (x, y, s, a = "middle", c = "") => `<text x="${x}" y="${y}" text-anchor="${a}"${c ? ` class="${c}"` : ""}>${s}</text>`;
+  const you = (x, y) => `<ellipse class="pp" cx="${x}" cy="${y}" rx="22" ry="9"/><circle class="pp" cx="${x}" cy="${y + 1}" r="10"/><path class="ink" d="M${x - 4} ${y + 10}L${x} ${y + 16}L${x + 4} ${y + 10}Z"/>`;
+  const cam = (x, y) => `<rect class="ink" x="${x - 12}" y="${y - 4}" width="24" height="14" rx="2"/><rect class="ink" x="${x - 5}" y="${y - 10}" width="10" height="7" rx="1"/>`;
+  const lamp = (x, y, r = 9) => {
+    let s = `<circle class="lamp" cx="${x}" cy="${y}" r="${r}"/>`;
+    for (let i = 0; i < 8; i++) { const a = (i * Math.PI) / 4, c = Math.cos(a), d = Math.sin(a); s += `<line class="ray" x1="${(x + c * (r + 3)).toFixed(1)}" y1="${(y + d * (r + 3)).toFixed(1)}" x2="${(x + c * (r + 7)).toFixed(1)}" y2="${(y + d * (r + 7)).toFixed(1)}"/>`; }
+    return s;
+  };
+  const beam = (x1, y1, x2, y2, w = 16, cls = "beam") => {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), px = (-dy / L) * w, py = (dx / L) * w;
+    return `<polygon class="${cls}" points="${x1},${y1} ${(x2 + px).toFixed(1)},${(y2 + py).toFixed(1)} ${(x2 - px).toFixed(1)},${(y2 - py).toFixed(1)}"/>`;
+  };
+  const svg = (h, body, label) => `<svg class="dg" viewBox="0 0 240 ${h}" role="img" aria-label="${label}">${body}</svg>`;
+  const scene = () => you(120, 72) + cam(120, 150) + T(120, 176, "камера") + T(146, 66, "вы", "start");
+  const sideHead = (x, y) => `<circle class="pp" cx="${x}" cy="${y}" r="12"/><path class="ink" d="M${x - 12} ${y - 2}L${x - 18} ${y + 2}L${x - 12} ${y + 5}Z"/>`;
+  const sideBody = (x, top, bottom) => `<path class="pp" d="M${x - 16} ${bottom}L${x - 12} ${top + 10}Q${x} ${top}${" "}${x + 12} ${top + 10}L${x + 16} ${bottom}Z"/>`;
+  const sideCam = (x, y) => `<rect class="ink" x="${x - 12}" y="${y - 8}" width="24" height="16" rx="2"/><rect class="ink" x="${x + 12}" y="${y - 4}" width="6" height="8" rx="1"/>`;
+  return {
+    window: svg(184, `<line class="wall" x1="16" y1="12" x2="16" y2="172"/><polygon class="beam" points="18,82 18,140 112,86 112,62"/><line class="win" x1="16" y1="82" x2="16" y2="140"/>`
+      + scene() + T(26, 76, "окно", "start"), "Схема: окно спереди-сбоку под углом 45 градусов"),
+    reflector: svg(184, beam(46, 126, 120, 72) + `<polygon class="beam2" points="186,104 186,132 124,82 118,64"/>` + lamp(46, 126)
+      + `<rect class="refl" x="186" y="96" width="8" height="44" rx="2" transform="rotate(-30 190 118)"/>`
+      + scene() + T(46, 154, "лампа") + T(196, 160, "белый лист"), "Схема: лампа спереди-сбоку и белый лист с другой стороны"),
+    three: svg(184, beam(46, 126, 120, 72) + beam(196, 124, 120, 72, 12, "beam2") + beam(196, 28, 124, 64, 9, "beam2")
+      + lamp(46, 126) + lamp(196, 124, 7) + lamp(196, 28, 7)
+      + scene() + T(46, 154, "основной") + T(198, 150, "заполняющий") + T(176, 31, "контровой", "end"), "Схема: три источника света"),
+    ring: svg(190, `<polygon class="beam" points="104,134 136,134 150,82 90,82"/>` + you(120, 72) + `<circle class="ringl" cx="120" cy="150" r="21"/>` + cam(120, 150)
+      + T(146, 66, "вы", "start") + T(120, 186, "камера в кольце лампы"), "Схема: кольцевая лампа вокруг камеры"),
+    "bad-window": svg(184, `<line class="wall" x1="14" y1="14" x2="226" y2="14"/><polygon class="beam" points="84,16 156,16 134,146 106,146"/><line class="win" x1="84" y1="14" x2="156" y2="14"/>`
+      + scene() + T(166, 32, "окно", "start") + T(150, 104, "лицо в тени", "start", "bad"), "Так не надо: окно за спиной"),
+    "bad-top": svg(184, `<line class="wall" x1="10" y1="160" x2="230" y2="160"/><line class="ln" x1="140" y1="0" x2="140" y2="8"/><polygon class="beam" points="140,26 100,160 180,160"/>`
+      + lamp(140, 16, 7) + sideBody(140, 82, 160) + sideHead(140, 66)
+      + sideCam(44, 66) + `<line class="ln" x1="44" y1="74" x2="34" y2="160"/><line class="ln" x1="44" y1="74" x2="54" y2="160"/>`
+      + T(160, 20, "лампа", "start") + T(120, 178, "тени под глазами и носом", "middle", "bad"), "Так не надо: одна лампа над головой, вид сбоку"),
+    thirds: svg(135, `<rect class="frame" x="1" y="1" width="238" height="133" rx="4"/>`
+      + `<path class="pp" d="M118 134Q120 96 160 90Q200 96 202 134Z"/><rect class="pp" x="153" y="62" width="14" height="30"/><circle class="pp" cx="160" cy="50" r="16"/>`
+      + `<circle class="ink" cx="154" cy="46" r="1.8"/><circle class="ink" cx="166" cy="46" r="1.8"/>`
+      + `<line class="grid" x1="80" y1="1" x2="80" y2="134"/><line class="grid" x1="160" y1="1" x2="160" y2="134"/><line class="grid" x1="1" y1="45" x2="239" y2="45"/><line class="grid" x1="1" y1="90" x2="239" y2="90"/>`
+      + T(10, 38, "глаза — на этой линии", "start", "b") + T(40, 108, "здесь видно,") + T(40, 122, "где вы"), "Правило третей: глаза на верхней линии, человек чуть сбоку"),
+    height: svg(150, sideBody(176, 60, 150) + sideHead(176, 46)
+      + sideCam(56, 46) + `<line class="okl" x1="76" y1="46" x2="160" y2="46"/>` + T(56, 26, "на уровне глаз", "middle", "ok")
+      + sideCam(56, 122) + `<line class="badl" x1="76" y1="120" x2="162" y2="54"/>` + T(10, 146, "снизу — виден подбородок", "start", "bad"), "Камера на уровне глаз, а не снизу"),
+    plans: svg(84, `<clipPath id="pc0"><rect x="4" y="4" width="72" height="42" rx="3"/></clipPath><clipPath id="pc1"><rect x="84" y="4" width="72" height="42" rx="3"/></clipPath><clipPath id="pc2"><rect x="164" y="4" width="72" height="42" rx="3"/></clipPath>`
+      + `<rect class="frame" x="4" y="4" width="72" height="42" rx="3"/><rect class="frame" x="84" y="4" width="72" height="42" rx="3"/><rect class="frame" x="164" y="4" width="72" height="42" rx="3"/>`
+      + `<g clip-path="url(#pc0)"><path class="pp" d="M12 48Q14 37 40 36Q66 37 68 48Z"/><circle class="pp" cx="40" cy="22" r="12"/></g>`
+      + `<g clip-path="url(#pc1)"><path class="pp" d="M100 48Q102 25 120 24Q138 25 140 48Z"/><circle class="pp" cx="120" cy="15" r="6.5"/></g>`
+      + `<g clip-path="url(#pc2)"><line class="wall" x1="164" y1="40" x2="236" y2="40"/><rect class="pp" x="172" y="24" width="16" height="16"/><circle class="pp" cx="206" cy="14" r="3.5"/><rect class="pp" x="203" y="18" width="6" height="13" rx="2"/><line class="ln" x1="205" y1="31" x2="204" y2="40"/><line class="ln" x1="207" y1="31" x2="208" y2="40"/></g>`
+      + T(40, 62, "крупный", "middle", "b") + T(40, 76, "лицо, эмоция") + T(120, 62, "средний", "middle", "b") + T(120, 76, "по пояс") + T(200, 62, "общий", "middle", "b") + T(200, 76, "вы и место"), "Три плана: крупный, средний, общий"),
+    safe: svg(160, `<rect class="frame" x="6" y="40" width="128" height="72" rx="3"/><path class="pp" d="M50 112Q52 86 70 84Q88 86 90 112Z"/><circle class="pp" cx="70" cy="70" r="9"/>`
+      + `<rect class="frame" x="162" y="6" width="72" height="128" rx="3"/><path class="pp" d="M178 92Q180 68 198 66Q216 68 218 92Z"/><circle class="pp" cx="198" cy="52" r="9"/>`
+      + `<rect class="zone" x="162" y="102" width="72" height="32"/><rect class="zone" x="216" y="46" width="18" height="56"/>`
+      + T(198, 122, "подписи", "middle", "bad") + T(70, 130, "YouTube, 16 : 9") + T(198, 152, "Shorts, 9 : 16"), "Горизонтальный и вертикальный кадр, закрытые зоны в вертикальном"),
+  };
+})();
+let tipsDrawn = false;
+function drawTips() {
+  if (!tipsDrawn) { document.querySelectorAll("[data-dg]").forEach((el) => (el.innerHTML = DG[el.dataset.dg] || "")); tipsDrawn = true; }
+  chkShow();
+}
+function chkLoad() { try { return JSON.parse(lsGet("raskadrovka-check") || "{}") || {}; } catch { return {}; } }
+function chkShow() {
+  const st = chkLoad(), boxes = document.querySelectorAll("[data-chk]");
+  let n = 0;
+  boxes.forEach((c) => { c.checked = !!st[c.dataset.chk]; if (c.checked) n++; });
+  $("#chk-n").textContent = n === boxes.length ? "Всё готово, можно снимать" : `Готово ${n} из ${boxes.length}`;
+}
+let hpane = lsGet("raskadrovka-hpane") === "tips" ? "tips" : "how";
+function showPane(p) {
+  hpane = p; lsSet("raskadrovka-hpane", p);
+  $("#help-how").hidden = p !== "how"; $("#help-tips").hidden = p !== "tips";
+  document.querySelectorAll("[data-hpane]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.hpane === p)));
+  if (p === "tips") drawTips();
+}
+function setHelp(open, pane, sec) {
+  const h = $("#help"); h.hidden = !open; $("#help-btn").setAttribute("aria-expanded", String(open));
+  if (!open) return;
+  showPane(pane || hpane);
+  const d = sec && document.getElementById(sec);
+  if (d) { d.open = true; d.scrollIntoView({ block: "start" }); } else h.scrollIntoView({ block: "nearest" });
+}
+$("#help").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-hpane]");
+  if (b) { showPane(b.dataset.hpane); return; }
+  if (e.target.id === "chk-reset") { lsSet("raskadrovka-check", "{}"); chkShow(); toast("Галочки сняты"); }
+});
+$("#help").addEventListener("change", (e) => {
+  const c = e.target.closest("[data-chk]"); if (!c) return;
+  const st = chkLoad(); if (c.checked) st[c.dataset.chk] = 1; else delete st[c.dataset.chk];
+  lsSet("raskadrovka-check", JSON.stringify(st)); chkShow();
+});
 $("#help-btn").addEventListener("click", () => setHelp($("#help").hidden));
 $("#help-close").addEventListener("click", () => { setHelp(false); $("#help-btn").focus(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#help").hidden && $("#prompter").hidden) setHelp(false); });
@@ -776,7 +1085,7 @@ function scriptHtml(v, ro) {
       <label><span class="col-l">В кадре</span><textarea class="show" data-bf="show" rows="2" placeholder="Что видит зритель"${ro}>${esc(b.show)}</textarea></label>
       <div class="btools">${canWrite ? `<button class="ib" type="button" data-bact="up" aria-label="Выше">↑</button><button class="ib" type="button" data-bact="down" aria-label="Ниже">↓</button><button class="ib del" type="button" data-bact="del" aria-label="Удалить блок">✕</button>` : ""}</div>
     </li>`).join("")}</ol>
-    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addblock">+ Блок</button><span class="count">Время считается по словам: около 140 слов в минуту. Текст в [скобках] — пропуск, считается одним словом.</span></div>` : ""}`;
+    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addblock">+ Блок</button><span class="count">Время считается по словам: около 140 слов в минуту. Текст в [скобках] — пропуск, считается одним словом.</span><button class="linkish" type="button" data-tips="t-structure">Из каких частей строить ролик</button></div>` : ""}`;
 }
 
 function shotsHtml(v, ro) {
@@ -787,7 +1096,7 @@ function shotsHtml(v, ro) {
       <textarea class="stext" data-sf="text" rows="1" placeholder="Что снять"${ro}>${esc(s.text)}</textarea>
       <select data-sf="place" aria-label="Где снимать"${ro}>${PLACES.map((p) => `<option${p === placeOf(s) ? " selected" : ""}>${esc(p)}</option>`).join("")}</select>
       ${canWrite ? `<button class="ib del" type="button" data-sact="del" aria-label="Удалить кадр">✕</button>` : ""}</li>`).join("")}</ul>
-    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addshot">+ Кадр</button></div>` : ""}`;
+    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addshot">+ Кадр</button><button class="linkish" type="button" data-tips="t-light">Как поставить свет и камеру</button></div>` : ""}`;
 }
 
 function packHtml(v, ro) {
@@ -795,7 +1104,7 @@ function packHtml(v, ro) {
   return `<div class="pack">
       <div class="titles-box"><h3>Варианты названия</h3>
         <ul class="titles">${v.titles.map((t, i) => `<li class="trow" data-i="${i}"><textarea class="field" data-tf rows="1" placeholder="Название для ${esc(PLATFORMS[v.platform])}"${ro}>${esc(t)}</textarea><span class="len" data-len></span>${canWrite ? `<button class="ib del" type="button" data-tact="del" aria-label="Удалить вариант">✕</button>` : ""}</li>`).join("")}</ul>
-        ${canWrite ? `<div class="add-row" style="margin-top:8px"><button class="btn" type="button" data-act="addtitle">+ Вариант</button><span class="count">${short ? "Коротко и с интригой: на экране видно 40–50 знаков" : "На YouTube до 100 знаков, в поиске видно около 60"}</span></div>` : ""}
+        ${canWrite ? `<div class="add-row" style="margin-top:8px"><button class="btn" type="button" data-act="addtitle">+ Вариант</button><span class="count">${short ? "Коротко и с интригой: на экране видно 40–50 знаков" : "На YouTube до 100 знаков, в поиске видно около 60"}</span><button class="linkish" type="button" data-tips="t-pack">Советы по названию и превью</button></div>` : ""}
       </div>
       <div><h3>${short ? "Первый кадр и обложка" : "Превью"}</h3>
         <textarea class="field" data-f="thumb" placeholder="Что на картинке, какая надпись, какая эмоция"${ro}>${esc(v.thumb)}</textarea></div>
@@ -928,6 +1237,8 @@ main.addEventListener("click", async (e) => {
   const v = cur();
   const tb = e.target.closest("[data-tab]");
   if (tb) { tab = tb.dataset.tab; lsSet("raskadrovka-tab", tab); renderMain(); return; }
+  const tl = e.target.closest("[data-tips]");
+  if (tl) { setHelp(true, "tips", tl.dataset.tips); return; }
   const act = e.target.closest("[data-act]")?.dataset.act;
   if (act === "new") { $("#picker").hidden = false; return; }
   if (!v) return;
@@ -1108,7 +1419,7 @@ function offlineStore() {
   mergeIn(SEED);
   function save() {
     if (ok) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { ok = false; } }
-    if (!ok) notice("Браузер не даёт сохранять правки в этом файле. Нажимайте «Сохранить в файл», чтобы ничего не потерять.");
+    if (!ok) notice("Браузер не даёт сохранять правки. Чтобы ничего не потерять, сохраняйте копию: «Файл ▾» → «Сохранить копию в файл».");
   }
   save();
   setTimeout(() => onData(JSON.parse(JSON.stringify(st.videos))), 0);
@@ -1153,7 +1464,7 @@ if (MODE === "offline") {
   $("#import-file").addEventListener("change", async (e) => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
     try { const n = store.importData(JSON.parse(await f.text())); notice(""); toast(n ? "Добавлено и обновлено роликов: " + n : "Всё и так совпадает"); }
-    catch { notice("Не получилось прочитать файл. Нужен файл, сохранённый кнопкой «Сохранить в файл», или data.json из папки раскадровки."); }
+    catch { notice("Не получилось прочитать файл. Нужен файл с роликами, сохранённый через «Файл ▾» → «Сохранить копию в файл» или «Скачать ролики файлом»."); }
   });
 } else {
   onlineStore().then((s) => {
