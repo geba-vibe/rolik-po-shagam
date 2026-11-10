@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ролик по шагам</title>
+<script>/* тема по умолчанию — тёмная; кнопка ◐ запоминает выбор. Ставится сразу, чтобы страница не мигала светлым */ try { document.documentElement.dataset.theme = localStorage.getItem("raskadrovka-theme") || "dark"; } catch { document.documentElement.dataset.theme = "dark"; }</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -328,6 +329,23 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
 .dg text.bad { fill: var(--rec); }
 .dg text.b { fill: var(--ink); font-weight: 600; }
 
+/* окно отзыва (только сайт): письмо уходит через Web3Forms на почту автора, адрес на странице не показан */
+.fb-back { position: fixed; inset: 0; z-index: 55; background: rgba(10, 12, 16, .45); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
+.fb { width: 100%; max-width: 460px; box-sizing: border-box; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px 18px; display: grid; gap: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, .25); }
+.fb h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 22px; letter-spacing: .02em; }
+.fb .lbl { font-size: 13px; gap: 6px; }
+.fb textarea, .fb input.field { width: 100%; box-sizing: border-box; font-size: 15px; color: var(--ink); }
+.fb textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+.fb input.field { height: 40px; }
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.fb-note { margin: -6px 0 0; font-size: 12px; color: var(--muted); }
+.fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.fb-row .btn { height: 40px; padding: 0 18px; }
+.fb-st { font-size: 14px; color: var(--muted); }
+.fb-st.ok { color: var(--ok); } .fb-st.bad { color: var(--rec); }
+/* обратная связь: тихая строка внизу страницы и в окне «?» */
+.foot { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 4px 10px; font-size: 13px; color: var(--muted); padding-top: 6px; text-align: center; }
+.help-mail { margin: 4px 0 0; padding-top: 10px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 @media (max-width: 760px) {
   .top { flex-wrap: nowrap; gap: 8px; }
   .brand h1 { font-size: 19px; letter-spacing: .04em; }
@@ -601,9 +619,11 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
         <li>Расстраиваться из-за первых просмотров. Каналы растут медленно — важнее выпускать ролики регулярно.</li>
       </ul></details>
   </div>
-  </section>
+  <p class="help-mail"><span>Нашли ошибку или есть идея?</span><button class="linkish" type="button" data-fb>Написать отзыв</button></p>
+    </section>
   <main id="main"></main>
-</div>
+  <footer class="foot"><button class="linkish" type="button" data-fb>Написать отзыв или задать вопрос</button></footer>
+  </div>
 <div class="prompter" id="prompter" hidden>
   <div class="pbar">
     <span class="rec" id="p-time">00:00</span>
@@ -618,9 +638,19 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
   <div class="pline" aria-hidden="true"></div>
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="fb-back" id="fb" hidden>
+  <form class="fb" id="fb-form" novalidate aria-labelledby="fb-h">
+    <div class="help-top"><h2 id="fb-h">Отзыв или вопрос</h2><button class="btn quiet" type="button" id="fb-close">Закрыть</button></div>
+    <label class="lbl">Ваш вопрос или пожелание<textarea class="field" id="fb-msg" name="message" rows="5" maxlength="3000" placeholder="Что понравилось, что неудобно, чего не хватает"></textarea></label>
+    <label class="lbl">Как с вами связаться — если нужен ответ<input class="field" id="fb-contact" name="contact" maxlength="200" autocomplete="email" placeholder="Почта или Telegram, необязательно"></label>
+    <input class="fb-hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="fb-note">Не пишите сюда пароли и личные данные.</p>
+    <div class="fb-row"><button class="btn primary" type="submit" id="fb-send">Отправить</button><span class="fb-st" id="fb-st" role="status"></span></div>
+  </form>
+</div>
 <script>
 /* Внутри Telegram (Mini App): скрипт Telegram грузится только там (в адресе есть tgWebApp…). Окно на всю высоту,
-   закрытие свайпом вниз выключено (мешало листать суфлёр), тема как в Telegram, если не выбрана кнопкой ◐,
+   закрытие свайпом вниз выключено (мешало листать суфлёр), тема по умолчанию тёмная (как везде),
    кнопка «Назад» Telegram закрывает то, что открыто сверху: суфлёр, меню, инструкцию, выбор заготовки. Вне Telegram ничего не делает. */
 (function () {
   if (!/tgWebApp/.test(location.hash + location.search) && !window.TelegramWebviewProxy) return;
@@ -629,11 +659,13 @@ body.dragging-clip { user-select: none; cursor: grabbing; }
     const tg = window.Telegram && Telegram.WebApp; if (!tg) return;
     document.documentElement.classList.add("in-tg");
     tg.ready(); tg.expand(); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
-    const theme = () => { let own = null; try { own = localStorage.getItem("raskadrovka-theme"); } catch {} if (!own) document.documentElement.dataset.theme = tg.colorScheme === "dark" ? "dark" : "light"; };
-    theme(); tg.onEvent("themeChanged", theme);
+    // верхняя полоса Telegram — в цвет фона приложения (тёмная по умолчанию, светлая после ◐)
+    const bar = () => { const c = document.documentElement.dataset.theme === "light" ? "#eceef1" : "#12151a"; try { tg.setHeaderColor && tg.setHeaderColor(c); tg.setBackgroundColor && tg.setBackgroundColor(c); } catch {} };
+    bar(); new MutationObserver(bar).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const $$ = (s) => document.querySelector(s);
-    const openThing = () => !$$("#prompter").hidden || [...document.querySelectorAll(".vpop")].some((p) => !p.hidden) || !$$("#help").hidden || !$$("#picker").hidden;
+    const openThing = () => ($$("#fb") && !$$("#fb").hidden) || !$$("#prompter").hidden || [...document.querySelectorAll(".vpop")].some((p) => !p.hidden) || !$$("#help").hidden || !$$("#picker").hidden;
     tg.BackButton.onClick(() => {
+      if ($$("#fb") && !$$("#fb").hidden) { $$("#fb-close").click(); return; }
       if (!$$("#prompter").hidden) $$("#p-close").click();
       else if ([...document.querySelectorAll(".vpop")].some((p) => !p.hidden)) document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       else if (!$$("#help").hidden) $$("#help-close").click();
@@ -1388,8 +1420,7 @@ document.addEventListener("keydown", (e) => {
 
 // ---------- тема ----------
 (function () {
-  const saved = lsGet("raskadrovka-theme");
-  if (saved) document.documentElement.dataset.theme = saved;
+  document.documentElement.dataset.theme = lsGet("raskadrovka-theme") || "dark"; // по умолчанию тёмная
   $("#theme-btn").addEventListener("click", () => {
     const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     const t = dark ? "light" : "dark"; document.documentElement.dataset.theme = t; lsSet("raskadrovka-theme", t);
@@ -1448,6 +1479,44 @@ function normalize(v) {
   return { title: "", topic: "", platform: "youtube", status: "idea", target: 300, titles: [""], thumb: "", notes: "", desc: "", ...v,
     blocks: Array.isArray(v.blocks) ? v.blocks : [], shots: Array.isArray(v.shots) ? v.shots : [] };
 }
+
+
+// ---------- отзыв (окно есть только на сайте) ----------
+(function () {
+  const box = document.getElementById("fb"); if (!box) return;
+  const KEY = "5f254306-8275-4437-bd8b-8f289deb443c"; // ключ Web3Forms: по нему можно только отправить письмо автору, прочитать почту нельзя
+  const st = $("#fb-st"), send = $("#fb-send"), msg = $("#fb-msg"), contact = $("#fb-contact");
+  const say = (t, cls = "") => { st.textContent = t; st.className = "fb-st" + (cls ? " " + cls : ""); };
+  const open = () => { closeMenus(); box.hidden = false; say(""); setTimeout(() => msg.focus(), 0); };
+  const close = () => { box.hidden = true; };
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-fb]")) { e.preventDefault(); open(); } });
+  $("#fb-close").addEventListener("click", close);
+  box.addEventListener("click", (e) => { if (e.target === box) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !box.hidden) close(); });
+  $("#fb-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = msg.value.trim(), who = contact.value.trim();
+    if (text.length < 3) { say("Напишите пару слов", "bad"); msg.focus(); return; }
+    const fd = new FormData();
+    fd.append("access_key", KEY);
+    fd.append("subject", "Ролик по шагам: отзыв");
+    fd.append("from_name", "Ролик по шагам");
+    fd.append("message", text);
+    fd.append("contact", who || "не указан");
+    fd.append("where", (document.documentElement.classList.contains("in-tg") ? "Telegram" : "браузер") + ", " + (matchMedia("(max-width: 760px)").matches ? "телефон" : "компьютер"));
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(who)) fd.append("email", who); // ответить можно прямо из письма
+    fd.append("botcheck", $("#fb-form .fb-hp").checked ? "1" : "");
+    send.disabled = true; say("Отправляю…");
+    try {
+      const r = await fetch("https://api.web3forms.com/submit", { method: "POST", body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.success === false) throw new Error(j.message || r.status);
+      msg.value = ""; contact.value = ""; say("Спасибо! Сообщение отправлено.", "ok");
+    } catch { say("Не отправилось. Проверьте интернет и попробуйте ещё раз.", "bad"); }
+    finally { send.disabled = false; }
+  });
+})();
+
 
 renderReel(); renderMain();
 if (MODE === "offline") {
