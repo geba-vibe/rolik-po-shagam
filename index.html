@@ -1,0 +1,1183 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ролик по шагам</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<style>
+/* Монтажный лист: слева тайм-код и часть ролика, дальше две колонки «Говорю | В кадре», как в сценарии А/В */
+:root {
+  --bg: #eceef1;
+  --sheet: #ffffff;
+  --rule: #d5d9e0;
+  --ink: #171a20;
+  --muted: #5f6774;
+  --accent: #1d6b64;
+  --accent-soft: #dcefec;
+  --rec: #d23a2f;
+  --rec-soft: #fbe5e2;
+  --warn: #9a5b00;
+  --warn-soft: #fbefd9;
+  --ok: #2a7a46;
+  --ok-soft: #e0f2e6;
+  --f-display: "Oswald", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --sheet: #1a1e25; --rule: #2c323c; --ink: #e6e9ee; --muted: #9aa3b1;
+    --accent: #5cc3b8; --accent-soft: #173431; --rec: #ff6b5f; --rec-soft: #3b1c19;
+    --warn: #f0b356; --warn-soft: #3a2a12; --ok: #6fcf8f; --ok-soft: #173322;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --sheet: #1a1e25; --rule: #2c323c; --ink: #e6e9ee; --muted: #9aa3b1;
+  --accent: #5cc3b8; --accent-soft: #173431; --rec: #ff6b5f; --rec-soft: #3b1c19;
+  --warn: #f0b356; --warn-soft: #3a2a12; --ok: #6fcf8f; --ok-soft: #173322;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap {
+  max-width: 1080px; margin: 0 auto; padding-block: 20px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 18px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px; padding: 7px 12px; cursor: pointer; white-space: nowrap; font-size: 14px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--sheet); font-weight: 600; }
+.btn.quiet { border-color: transparent; background: none; color: var(--muted); }
+.btn.quiet:hover { color: var(--ink); }
+.btn.danger { color: var(--rec); }
+.btn.danger.armed { background: var(--rec); border-color: var(--rec); color: var(--sheet); font-weight: 600; }
+.field { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 10px; min-width: 0; }
+.field:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+/* фокус у полей — мягкое кольцо вплотную к рамке, а не обводка с отступом, которая налезает на соседей */
+.field:focus, .field:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+label.lbl { display: grid; gap: 3px; font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+
+/* шапка */
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand h1 { margin: 0; white-space: nowrap; font-family: var(--f-display); font-weight: 600; font-size: 26px; letter-spacing: .06em; text-transform: uppercase; }
+.slate { width: 34px; height: 26px; border-radius: 3px; background:
+  repeating-linear-gradient(-45deg, var(--ink) 0 6px, var(--sheet) 6px 12px) top / 100% 8px no-repeat, var(--ink); }
+.top-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.notice { font-size: 14px; color: var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 8px 12px; }
+
+/* темы и лента роликов */
+.lane { display: grid; gap: 8px; }
+/* строка тем: «ТЕМЫ» · вкладки-надписи · открытая тема — «таблетка» со стрелкой меню внутри · «+ Тема» пунктиром */
+.topbar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; }
+.tlabel { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.topic { border: 0; background: none; height: 32px; padding: 0 12px; border-radius: 999px; cursor: pointer; font-size: 14px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.topic:hover { color: var(--ink); background: color-mix(in srgb, var(--sheet) 60%, transparent); }
+.topic .n { font-size: 12px; color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+.topic-on { display: inline-flex; align-items: center; background: var(--sheet); border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); }
+.topic-on .topic { color: var(--ink); font-weight: 600; background: none; }
+.topbar .menu-wrap { position: static; } /* меню темы — от левого края строки тем, чтобы не вылезать за экран */
+.tmore { height: 32px; border: 0; border-left: 1px solid var(--rule); background: none; color: var(--muted); padding: 0 12px 0 10px; border-radius: 0 999px 999px 0; cursor: pointer; font-size: 12px; }
+.tmore:hover, .tmore[aria-expanded="true"] { color: var(--ink); background: var(--bg); }
+.topic.add { color: var(--accent); border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent); margin-left: 4px; }
+.topic.add:hover { border-style: solid; background: var(--accent-soft); color: var(--accent); }
+.tpop { left: 0; right: auto; top: calc(100% + 6px); }
+.topic-in { font-size: 14px; height: 32px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; width: 200px; margin-left: 4px; }
+.topbar .spacer { flex: 1; }
+.plan-link { border: 1px solid var(--rule); background: var(--sheet); color: var(--accent); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.plan-link:hover, .plan-link[aria-current="true"] { border-color: var(--accent); }
+.plan-link[aria-current="true"] { background: var(--accent-soft); }
+.reel { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.clip { flex: 1 0 220px; max-width: 360px; text-align: left; border: 1px solid var(--rule); background: var(--sheet); border-radius: 8px; padding: 8px 12px; cursor: pointer; display: grid; gap: 3px; align-content: start; }
+.clip:hover { border-color: var(--accent); }
+.clip[aria-current="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.clip .ct { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clip .cm { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); font-family: var(--f-mono); white-space: nowrap; overflow: hidden; }
+.clip.dragging { opacity: .75; position: relative; z-index: 3; cursor: grabbing; box-shadow: 0 8px 20px rgba(0, 0, 0, .25); }
+.clip.drop-before { box-shadow: inset 4px 0 0 var(--accent); }
+.clip.drop-after { box-shadow: inset -4px 0 0 var(--accent); }
+body.dragging-clip { user-select: none; cursor: grabbing; }
+.clip.add { flex: 0 0 150px; color: var(--accent); align-content: center; justify-items: start; font-weight: 600; font-size: 14px; border-style: dashed; }
+
+/* всплывающие меню: «Файл» в шапке и «⋯» у ролика */
+.menu-wrap { position: relative; }
+.vpop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 8px; display: grid; gap: 4px; width: max-content; min-width: 240px; max-width: min(360px, calc(100vw - 32px)); box-sizing: border-box; box-shadow: 0 10px 28px rgba(0, 0, 0, .18); }
+.mi { text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; white-space: nowrap; }
+.mi:hover { background: var(--bg); }
+.mi.danger { color: var(--rec); }
+.mi.danger.armed { background: var(--rec); color: var(--sheet); font-weight: 600; }
+.mi-sep { height: 1px; background: var(--rule); margin: 6px 2px; }
+.mi-l { display: grid; gap: 8px; padding: 8px 10px; font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+.mi-l select, .mi-l input, .mi-row .btn { font-size: 14px; height: 36px; box-sizing: border-box; }
+.mi-l select, .mi-l input { padding: 0 10px; }
+.mi-row { display: flex; gap: 10px; align-items: center; }
+.mi-row input { flex: 1 1 150px; min-width: 0; width: 100%; }
+.mi-row .btn { flex: none; padding: 0 14px; }
+.mi-row.split .btn { flex: 1 1 0; }
+.more { width: 36px; height: 36px; padding: 0; font-size: 20px; line-height: 1; border-radius: 8px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.st-idea .dot, .dot.st-idea { background: var(--muted); }
+.st-script .dot, .dot.st-script { background: var(--warn); }
+.st-shoot .dot, .dot.st-shoot { background: var(--rec); }
+.st-edit .dot, .dot.st-edit { background: var(--accent); }
+.st-done .dot, .dot.st-done { background: var(--ok); }
+
+/* выбор шаблона */
+.picker { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.picker h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 20px; letter-spacing: .03em; }
+.tpls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.tpl { text-align: left; border: 1px solid var(--rule); background: var(--bg); border-radius: 8px; padding: 12px; cursor: pointer; display: grid; gap: 4px; }
+.tpl:hover { border-color: var(--accent); }
+.tpl b { font-size: 15px; }
+.tpl span { font-size: 13px; color: var(--muted); }
+
+/* лист ролика */
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; display: grid; grid-template-columns: minmax(0, 1fr); }
+.sheet-head, .pane { min-width: 0; }
+.sheet-head { padding: 16px 18px 12px; display: grid; gap: 12px; border-bottom: 1px solid var(--rule); }
+.title-row { display: flex; gap: 8px; align-items: flex-start; }
+.title-in { flex: 1; font-family: var(--f-display); font-weight: 500; font-size: clamp(22px, 3.4vw, 30px); line-height: 1.25; border: 0; background: none; padding: 2px 4px; margin-left: -4px; width: 100%; min-width: 0; letter-spacing: .01em; resize: none; overflow: hidden; border-radius: 6px; }
+.title-in:hover { background: var(--bg); }
+.title-in:focus { background: var(--bg); outline: none; }
+.meta { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+.meta .field { padding: 5px 8px; font-size: 14px; }
+.meta input[type=number] { width: 76px; }
+.meter { flex: 1 1 240px; min-width: 0; display: grid; gap: 4px; }
+.meter .mt { display: flex; justify-content: space-between; gap: 8px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter .mt b { color: var(--ink); font-weight: 500; }
+.bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .2s; }
+.meter.over .bar i { background: var(--rec); }
+.meter.over .mt b { color: var(--rec); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tab { border: 0; background: none; padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 14px; color: var(--muted); }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--sheet); }
+.tabs .spacer { flex: 1; }
+.prompt-btn { display: inline-flex; align-items: center; gap: 7px; }
+.prompt-btn::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--rec); }
+
+.pane { padding: 14px 18px 18px; display: grid; gap: 12px; }
+.tip { font-size: 13px; color: var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 7px 10px; }
+
+/* блоки сценария */
+.cols { display: grid; grid-template-columns: 120px 1fr 1fr 34px; gap: 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-inline: 2px; }
+.blocks { list-style: none; margin: 0; padding: 0; display: grid; }
+.blk { display: grid; grid-template-columns: 120px 1fr 1fr 34px; gap: 10px; padding: 12px 2px; border-top: 1px solid var(--rule); align-items: start; }
+.blk:first-child { border-top: 0; }
+.tc { display: grid; gap: 5px; align-content: start; }
+.tc .t { font-family: var(--f-mono); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tc select { font-size: 13px; padding: 3px 4px; width: 100%; }
+.dbtn { justify-self: start; border: 0; background: none; padding: 0; cursor: pointer; font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: underline dotted; text-underline-offset: 3px; }
+.dbtn:hover { color: var(--ink); }
+.tc .sec { font-family: var(--f-mono); font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.tc .sec input { width: 52px; padding: 1px 4px; font-size: 12px; font-family: var(--f-mono); }
+.blk:not(.open) .opt:not(.has) { display: none; }
+.blk.hook .tc .t { color: var(--rec); }
+.blk textarea { width: 100%; box-sizing: border-box; resize: none; overflow: hidden; min-height: 64px; line-height: 1.5; border: 1px solid transparent; background: var(--bg); border-radius: 6px; padding: 8px 10px; }
+.blk textarea:hover { border-color: var(--rule); }
+.blk textarea:focus { background: var(--sheet); border-color: var(--accent); outline: none; }
+.blk textarea.show { font-size: 14px; color: var(--muted); }
+.blk textarea.show:focus { color: var(--ink); }
+.col-l { display: none; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.btools { display: grid; gap: 2px; }
+.ib { width: 30px; height: 28px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 15px; }
+.ib:hover { background: var(--bg); color: var(--ink); }
+.ib.del:hover { color: var(--rec); }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* кадры */
+.shots { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.shot { display: flex; gap: 10px; align-items: center; padding: 4px 0; }
+.shot input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.shot .stext { flex: 1 1 120px; min-width: 0; width: 100%; box-sizing: border-box; resize: none; overflow: hidden; line-height: 1.45; border: 1px solid transparent; background: none; padding: 5px 8px; border-radius: 6px; }
+.shot .stext:hover { border-color: var(--rule); }
+.shot .stext:focus { border-color: var(--accent); outline: none; background: var(--bg); }
+.shot.done .stext { color: var(--muted); text-decoration: line-through; }
+.count { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+
+/* упаковка */
+.pack { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.pack .titles-box { grid-column: 1 / -1; }
+.pack .trow textarea { width: 100%; box-sizing: border-box; resize: none; overflow: hidden; line-height: 1.45; min-height: 0; }
+.pack h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.titles { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.trow { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; }
+.trow input { min-width: 0; }
+.len { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 4ch; text-align: right; }
+.len.long { color: var(--warn); }
+.len.over { color: var(--rec); }
+.pack textarea { width: 100%; box-sizing: border-box; min-height: 110px; resize: vertical; line-height: 1.5; }
+.foot-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-top: 1px solid var(--rule); padding-top: 12px; }
+.foot-acts .spacer { flex: 1; }
+.copybox { width: 100%; box-sizing: border-box; min-height: 160px; font-family: var(--f-mono); font-size: 13px; }
+
+.empty { padding: 40px 18px; text-align: center; color: var(--muted); display: grid; gap: 10px; justify-items: center; }
+
+/* пропуски [в скобках] */
+.gaps { border: 1px solid var(--warn); background: var(--warn-soft); color: var(--warn); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; align-self: center; white-space: nowrap; }
+.gaps:hover { border-color: var(--ink); }
+.blk textarea.has-gap { box-shadow: inset 3px 0 0 var(--warn); }
+.clip .gap-n { color: var(--warn); }
+.tc .chap { font-size: 12px; padding: 3px 6px; width: 100%; box-sizing: border-box; }
+
+/* описание для YouTube */
+.ytdesc { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.ytdesc h3 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.ytdesc textarea { width: 100%; box-sizing: border-box; min-height: 70px; resize: vertical; line-height: 1.5; }
+.descprev { margin: 0; white-space: pre-wrap; font-family: var(--f-mono); font-size: 13px; line-height: 1.6; background: var(--bg); border-radius: 6px; padding: 10px 12px; max-height: 320px; overflow: auto; }
+
+/* план съёмки */
+.clip.plan { border-color: var(--accent); }
+.clip.plan .ct { color: var(--accent); }
+.plan-h { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: clamp(22px, 3.4vw, 30px); }
+.plan-lead { margin: 0; color: var(--muted); font-size: 14px; max-width: 65ch; }
+.plan-opt { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.pgroups { display: grid; gap: 18px; }
+.pgroup h3 { margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; font-family: var(--f-display); font-weight: 500; font-size: 19px; letter-spacing: .02em; }
+.pshot { padding: 0; border-top: 1px solid var(--rule); }
+.prow { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; cursor: pointer; }
+.prow:hover .pt { color: var(--accent); }
+.pshot:first-child { border-top: 0; }
+.pshot input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+.pshot .pt { flex: 1; min-width: 0; }
+.pshot.done .pt { color: var(--muted); text-decoration: line-through; }
+.pshot .pv { display: block; font-size: 12px; color: var(--muted); font-family: var(--f-mono); }
+.shot select { font-size: 13px; padding: 3px 4px; max-width: 150px; flex: none; }
+
+/* инструкция */
+#theme-btn { width: 30px; height: 30px; padding: 0; display: inline-grid; place-items: center; }
+#file-btn { padding-inline: 8px; }
+.help-q { width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 1px solid var(--rule); font-weight: 600; display: inline-grid; place-items: center; }
+.help-q:hover, .help-q[aria-expanded="true"] { color: var(--ink); border-color: var(--accent); }
+.help { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; }
+.help-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.help h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 22px; letter-spacing: .02em; }
+.help-lead { margin: 0; max-width: 65ch; }
+.help details { border-top: 1px solid var(--rule); padding: 8px 0 2px; }
+.help summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.help summary:hover { color: var(--accent); }
+.help p, .help ul, .help ol { margin: 6px 0; max-width: 65ch; }
+.help ul, .help ol { padding-left: 22px; display: grid; gap: 4px; }
+
+/* суфлёр */
+.prompter { position: fixed; inset: 0; z-index: 50; background: #0b0c0f; color: #f3f4f6; display: grid; grid-template-rows: auto 1fr; }
+.pbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: #16181d; font-size: 14px; }
+.pbar button { border: 1px solid #3a3f49; background: #22252c; color: #f3f4f6; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.pbar button:hover { border-color: #7fd6cc; }
+.pbar .rec { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); color: #ff8a80; }
+.pbar .rec::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #ff5a4e; }
+.pbar label { display: inline-flex; gap: 6px; align-items: center; color: #b9bec8; }
+.pbar .spacer { flex: 1; }
+.pscroll { overflow-y: auto; padding: 30vh max(24px, env(safe-area-inset-right, 0px)) 70vh max(24px, env(safe-area-inset-left, 0px)); position: relative; }
+.ptext { max-width: 900px; margin: 0 auto; font-size: var(--psize, 40px); line-height: 1.35; font-weight: 600; }
+.ptext p { margin: 0 0 .9em; }
+.ptext .pl { display: block; font-family: var(--f-mono); font-size: 14px; font-weight: 400; letter-spacing: .1em; text-transform: uppercase; color: #7fd6cc; margin-bottom: 4px; }
+.prompter.mirror .ptext { transform: scaleX(-1); }
+.pline { position: fixed; left: 0; right: 0; top: 38%; height: 0; border-top: 2px solid rgba(255, 90, 78, .45); pointer-events: none; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 8px 14px; border-radius: 8px; font-size: 14px; z-index: 60; max-width: calc(100% - 32px); }
+
+@media (max-width: 760px) {
+  .top { flex-wrap: nowrap; gap: 8px; }
+  .brand h1 { font-size: 19px; letter-spacing: .04em; }
+  .slate { width: 28px; height: 22px; }
+  .top-acts { flex-wrap: nowrap; gap: 4px; }
+  .prompt-btn .pl-t { display: none; }
+  .prompt-btn { padding: 7px 10px; }
+  .tabs { flex-wrap: nowrap; }
+  .tab { padding: 6px 10px; }
+  .shot { display: grid; grid-template-columns: 18px minmax(0, 1fr) 30px; align-items: center; gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--rule); }
+  .shot:first-child { border-top: 0; }
+  .shot .stext { grid-column: 2 / 4; }
+  .shot select { grid-column: 2; max-width: none; }
+  .cols { display: none; }
+  .blk { grid-template-columns: 1fr 34px; gap: 8px; }
+  .tc { grid-column: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .tc select { flex: 1 1 120px; width: auto; }
+  .tc .chap { flex-basis: 100%; }
+  .btools { grid-column: 2; grid-row: 1; grid-template-columns: 1fr; }
+  .blk > label { grid-column: 1 / -1; display: grid; gap: 3px; }
+  .col-l { display: block; }
+  .btools { display: flex; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="slate" aria-hidden="true"></span><h1>Ролик по шагам</h1></div>
+    <div class="top-acts">
+      <div class="menu-wrap"><button class="btn quiet" id="file-btn" type="button" aria-expanded="false" aria-controls="file-pop">Файл ▾</button>
+        <div class="vpop" id="file-pop" hidden>
+          <button class="mi" id="export-btn" type="button">Сохранить копию в файл</button>
+          <button class="mi" id="import-btn" type="button">Загрузить из файла</button>
+          <input type="file" id="import-file" accept=".json,application/json" hidden>
+          </div></div>
+      <button class="btn quiet help-q" id="help-btn" type="button" aria-expanded="false" aria-controls="help" aria-label="Как пользоваться" title="Как пользоваться">?</button>
+      <button class="btn quiet" id="theme-btn" type="button" aria-label="Сменить тему">◐</button>
+    </div>
+  </header>
+  <div class="notice" id="notice" hidden></div>
+  <div class="lane">
+    <div class="topbar" id="topbar" aria-label="Темы"></div>
+    <nav class="reel" id="reel" aria-label="Ролики"></nav>
+  </div>
+  <section class="picker" id="picker" hidden aria-label="Новый ролик">
+    <h2>Новый ролик</h2>
+    <div class="tpls" id="tpls"></div>
+    <div><button class="btn quiet" type="button" id="picker-close">Отмена</button></div>
+  </section>
+  <section class="help" id="help" hidden aria-label="Как пользоваться">
+    <div class="help-top"><h2>Как пользоваться</h2><button class="btn quiet" type="button" id="help-close">Закрыть</button></div>
+    <p class="help-lead">«Ролик по шагам» — тетрадь для сценариев роликов. Каждый ролик — отдельный лист: что вы говорите, что видно в кадре и сколько это длится. Всё сохраняется само, кнопки «Сохранить» нет.</p>
+    <details open><summary>1. Начать новый ролик</summary>
+      <ol><li>Первая карточка в ленте — <b>«+ Новый ролик»</b>. Нажмите её.</li>
+      <li>Выберите заготовку: <b>YouTube на 8–12 минут</b>, <b>Shorts / TikTok на 30–60 секунд</b> или <b>пустой лист</b>.</li>
+      <li>Впишите рабочее название вверху листа. Площадку, статус и длину (для YouTube — в минутах, для коротких — в секундах) можно поменять под названием.</li></ol>
+      <p>Чтобы открыть другой ролик, нажмите на его карточку в ленте. Порядок роликов меняется перетаскиванием карточки мышью, а на телефоне — кнопкой <b>«⋯»</b> у названия ролика: «← Раньше» и «Позже →».</p></details>
+    <details><summary>2. Темы — если ведёте несколько каналов или рубрик</summary>
+      <p>Над лентой — темы, например «Ремонт однушки». В ленте видны ролики только выбранной темы, а «Все» показывает всё сразу.</p>
+      <ul><li><b>«+ Тема»</b> — впишите название и нажмите Enter, затем выберите заготовку первого ролика.</li>
+      <li>Новый ролик попадает в тему, которая сейчас открыта.</li>
+      <li>Перенести ролик в другую тему — кнопка <b>«⋯»</b> рядом с названием ролика.</li>
+      <li>Стрелка <b>▾</b> внутри открытой темы: переименовать тему или удалить её целиком вместе со всеми роликами. Удаление — двумя нажатиями, вернуть его нельзя.</li></ul></details>
+    <details><summary>3. Написать сценарий</summary>
+      <p>Вкладка <b>«Сценарий»</b>. Ролик разбит на блоки: крючок, вступление, основная часть, финал и так далее.</p>
+      <ul><li><b>Говорю</b> — ваш текст, как вы его произнесёте.</li>
+      <li><b>В кадре</b> — что в это время видит зритель.</li>
+      <li>Слева — время, когда начинается блок, и сколько он длится. Время считается само по количеству слов. Если знаете точно, нажмите на подчёркнутое «≈29 с» и впишите своё время. Там же для YouTube можно задать название главы.</li>
+      <li>Стрелки ↑ ↓ меняют блоки местами, ✕ удаляет блок, <b>«+ Блок»</b> внизу добавляет новый.</li></ul>
+      <p>Полоса <b>«Хронометраж»</b> показывает, укладываетесь ли вы в задуманную длину. Если сильно перебрали, она краснеет.</p></details>
+    <details><summary>4. Пропуски в [квадратных скобках]</summary>
+      <p>Если чего-то пока не знаете, пишите это в скобках: <i>[что ответили в газовой службе]</i>. Такие места отмечены жёлтой полоской.</p>
+      <p>Кнопка <b>«Осталось вписать: 2»</b> рядом с хронометражем сразу показывает первый пропуск — можно печатать поверх. Если поставить статус «Съёмка», а пропуски остались, приложение напомнит.</p></details>
+    <details><summary>5. Кадры и план съёмки</summary>
+      <p>Вкладка <b>«Кадры»</b> — список того, что нужно снять. У каждого кадра есть место: кухня, ниша, санузлы, запись экрана… Приложение угадывает его по тексту, а вы можете поправить.</p>
+      <p>Когда в теме появляются кадры, справа над лентой видна кнопка <b>«План съёмки»</b>. Там кадры ещё не вышедших роликов этой темы собраны по местам. Пришли в ванную — сняли всё, что нужно для всех серий, и поставили галочки. Галочка сразу отмечается и в самом ролике.</p></details>
+    <details><summary>6. Название, превью и описание</summary>
+      <p>Вкладка <b>«Упаковка»</b>:</p>
+      <ul><li><b>Варианты названия</b> — пишите несколько, рядом счётчик знаков. Оранжевый — длинновато, красный — слишком длинно.</li>
+      <li><b>Превью</b> — что будет на картинке ролика.</li>
+      <li><b>Описание для YouTube</b> — напишите пару строк, а ниже само соберётся описание с главами по времени. Нажмите <b>«Скопировать описание»</b> и вставьте при загрузке ролика. Название главы можно задать в блоке, в поле «Глава на YouTube».</li>
+      </ul>
+      <p>Кнопка <b>«⋯»</b> рядом с названием ролика: перенести в другую тему, сделать копию, скопировать весь сценарий текстом, удалить ролик (удаление — двумя нажатиями).</p></details>
+    <details><summary>7. Суфлёр</summary>
+      <p>Кнопка <b>«Суфлёр»</b> с красной точкой (на телефоне — просто красная точка) открывает ваш текст крупно на чёрном экране — читайте во время записи.</p>
+      <ul><li><b>Пуск / Пауза</b> — или нажмите на текст, или пробел на клавиатуре.</li>
+      <li><b>Скорость</b> и <b>Размер</b> — ползунками. Стрелки ↑ ↓ на клавиатуре тоже меняют скорость.</li>
+      <li><b>Зеркально</b> — если ставите телефон или планшет под стекло суфлёра.</li>
+      <li><b>Закрыть</b> — кнопкой или клавишей Esc.</li></ul></details>
+    <details><summary>8. Где хранятся ролики</summary>
+      <p>У приложения две версии, и они не связаны между собой:</p>
+      <ul><li><b>Страница на claude.ai</b> — ролики хранятся в вашем аккаунте Claude, их видно с любого компьютера и телефона. Меню <b>«Файл»</b> в шапке → «Скачать ролики файлом» сохраняет копию.</li>
+      <li><b>Файл «Раскадровка.html»</b> на компьютере — работает без интернета, но ролики хранятся только в этом браузере. Меню <b>«Файл»</b> в шапке → «Сохранить копию в файл» и «Загрузить из файла» переносят их на другой компьютер или в другую версию.</li></ul>
+      <p>Проще всего работать на странице: Claude сам переносит ваши правки оттуда в файл, когда вы просите что-то поменять.</p></details>
+    <details><summary>9. Как попросить Claude помочь</summary>
+      <p>Напишите Claude обычными словами, например: «добавь ролик про выбор прораба», «сократи крючок во второй серии», «придумай пять названий для серии 1». Claude внесёт правки в обе версии.</p></details>
+  </section>
+  <main id="main"></main>
+</div>
+<div class="prompter" id="prompter" hidden>
+  <div class="pbar">
+    <span class="rec" id="p-time">00:00</span>
+    <button type="button" id="p-play">Пуск</button>
+    <label>Скорость <input type="range" id="p-speed" min="10" max="160" value="45"></label>
+    <label>Размер <input type="range" id="p-size" min="24" max="80" value="40"></label>
+    <label><input type="checkbox" id="p-mirror"> Зеркально</label>
+    <span class="spacer"></span>
+    <button type="button" id="p-close">Закрыть</button>
+  </div>
+  <div class="pscroll" id="p-scroll"><div class="ptext" id="p-text"></div></div>
+  <div class="pline" aria-hidden="true"></div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+<script>
+/* Внутри Telegram (Mini App): скрипт Telegram грузится только там (в адресе есть tgWebApp…). Окно на всю высоту,
+   закрытие свайпом вниз выключено (мешало листать суфлёр), тема как в Telegram, если не выбрана кнопкой ◐,
+   кнопка «Назад» Telegram закрывает то, что открыто сверху: суфлёр, меню, инструкцию, выбор заготовки. Вне Telegram ничего не делает. */
+(function () {
+  if (!/tgWebApp/.test(location.hash + location.search) && !window.TelegramWebviewProxy) return;
+  const sc = document.createElement("script"); sc.src = "https://telegram.org/js/telegram-web-app.js";
+  sc.onload = () => {
+    const tg = window.Telegram && Telegram.WebApp; if (!tg) return;
+    document.documentElement.classList.add("in-tg");
+    tg.ready(); tg.expand(); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+    const theme = () => { let own = null; try { own = localStorage.getItem("raskadrovka-theme"); } catch {} if (!own) document.documentElement.dataset.theme = tg.colorScheme === "dark" ? "dark" : "light"; };
+    theme(); tg.onEvent("themeChanged", theme);
+    const $$ = (s) => document.querySelector(s);
+    const openThing = () => !$$("#prompter").hidden || [...document.querySelectorAll(".vpop")].some((p) => !p.hidden) || !$$("#help").hidden || !$$("#picker").hidden;
+    tg.BackButton.onClick(() => {
+      if (!$$("#prompter").hidden) $$("#p-close").click();
+      else if ([...document.querySelectorAll(".vpop")].some((p) => !p.hidden)) document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      else if (!$$("#help").hidden) $$("#help-close").click();
+      else if (!$$("#picker").hidden) $$("#picker-close").click();
+    });
+    setInterval(() => { const o = openThing(); if (o !== tg.BackButton.isVisible) { if (o) tg.BackButton.show(); else tg.BackButton.hide(); } }, 400);
+  };
+  document.head.appendChild(sc);
+})();
+</script>
+
+
+<script>
+const MODE = "offline";
+const SEED = /*SEED_START*/{"videos":[]}/*SEED_END*/;
+
+const PLATFORMS = { youtube: "YouTube", shorts: "Shorts", tiktok: "TikTok", reels: "Reels" };
+const SHORT = { shorts: 1, tiktok: 1, reels: 1 };
+const STATUSES = { idea: "Идея", script: "Сценарий", shoot: "Съёмка", edit: "Монтаж", done: "Вышел" };
+const PARTS = ["Крючок", "Вступление", "Основная часть", "Пример", "Поворот", "Перебивка", "Призыв", "Финал"];
+const WPS = 2.3; // слов в секунду: спокойная русская речь ≈ 140 слов в минуту
+const PLACES = ["Кухня", "Комната", "Ниша", "Коридор", "Санузлы", "Лоджия", "Вы в кадре", "Запись экрана", "Разное"];
+const GAP = /\[[^\]]+\]/g;
+const gapsIn = (s) => (String(s || "").match(GAP) || []).length;
+const gapsOf = (v) => v.blocks.reduce((n, b) => n + gapsIn(b.say) + gapsIn(b.show), 0);
+function guessPlace(t) {
+  t = String(t || "").toLowerCase();
+  if (/^вы в кадре|вступлени|финал/.test(t)) return "Вы в кадре";
+  if (/запись экрана|^рендеры|слайд|мудборд/.test(t)) return "Запись экрана";
+  if (/^комнат/.test(t)) return "Комната";
+  if (/рулетк|ниш/.test(t)) return "Ниша";
+  if (/кухн|газ|плиты/.test(t)) return "Кухня";
+  if (/коридор|прихож/.test(t)) return "Коридор";
+  if (/ванн|туалет|санузл|плитк|бордюр/.test(t)) return "Санузлы";
+  if (/лодж/.test(t)) return "Лоджия";
+  if (/комнат|ламинат|лампочк/.test(t)) return "Комната";
+  return "Разное";
+}
+const placeOf = (s) => s.place || guessPlace(s.text);
+
+const TEMPLATES = [
+  { key: "youtube", name: "YouTube, 8–12 минут", about: "Крючок, вступление, три части, поворот, финал с вопросом зрителям", platform: "youtube", target: 600,
+    blocks: [["Крючок", "Первые 30 секунд: кто вы, какой вызов и что на кону"], ["Вступление", "Зачем смотреть до конца: что зритель узнает"], ["Основная часть", "Первая часть истории"], ["Основная часть", "Вторая часть"], ["Основная часть", "Третья часть"], ["Поворот", "Сомнение, проблема или неожиданность"], ["Финал", "Итог, что будет дальше, вопрос в комментарии"]] },
+  { key: "short", name: "Shorts / TikTok, 30–60 секунд", about: "Крючок за 2 секунды, суть, поворот, призыв", platform: "shorts", target: 45,
+    blocks: [["Крючок", "Одна фраза, которая останавливает палец. До 2 секунд"], ["Основная часть", "Суть в 2–3 предложениях"], ["Поворот", "Неожиданный результат или ответ"], ["Призыв", "Вопрос в комментарии или «весь ремонт на канале»"]] },
+  { key: "empty", name: "Пустой лист", about: "Один блок, дальше сами", platform: "youtube", target: 300, blocks: [["Крючок", ""]] }
+];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const now = () => Date.now();
+const words = (s) => (String(s || "").replace(/\[[^\]]*\]/g, " x ").match(/[\p{L}\p{N}]+/gu) || []).length;
+const secOf = (b) => (b.sec > 0 ? +b.sec : Math.round(words(b.say) / WPS));
+const tc = (s) => { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 12 || h > 14) ? b : c; };
+
+let videos = {}, curId = null, tab = "script", store = null, ready = false, canWrite = true, view = "video";
+const DEFAULT_TOPIC = "Мои ролики";
+let curTopic = (() => { try { return localStorage.getItem("raskadrovka-topic") || ""; } catch { return ""; } })(); // "" — первая тема, "*" — все
+const extraTopics = new Set(); // тема без роликов живёт до первого ролика в ней
+let addingTopic = false;
+let planHide = lsGet("raskadrovka-planhide") === "1";
+function lsGet0(k) { try { return localStorage.getItem(k); } catch { return null; } }
+if (lsGet0("raskadrovka-view") === "plan") view = "plan";
+const pending = new Set(), timers = {};
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+try { const t = lsGet("raskadrovka-tab"); if (t) tab = t; } catch {}
+
+function notice(t) { const n = $("#notice"); n.textContent = t; n.hidden = !t; }
+let toastT;
+function toast(t) { const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2600); }
+
+// порядок в ленте: v.order (ставится при перетаскивании), иначе время создания — числа одного масштаба
+const orderKey = (v) => (typeof v.order === "number" ? v.order : v.createdAt || 0);
+function all() { return Object.values(videos).sort((a, b) => orderKey(a) - orderKey(b) || (a.createdAt || 0) - (b.createdAt || 0)); }
+// переставить ролик в ленте текущей темы на место to (индекс в list())
+function moveVideo(id, to) {
+  const l = list(), from = l.findIndex((v) => v.id === id);
+  if (from < 0 || to === from || to < 0 || to >= l.length) return false;
+  const keys = l.map(orderKey).sort((a, b) => a - b);
+  for (let i = 1; i < keys.length; i++) if (keys[i] <= keys[i - 1]) keys[i] = keys[i - 1] + 1;
+  const [m] = l.splice(from, 1); l.splice(to, 0, m);
+  l.forEach((v, i) => { if (v.order !== keys[i]) { v.order = keys[i]; touch(v, false); } });
+  renderReel(); return true;
+}
+const topicOf = (v) => (v.topic || "").trim() || DEFAULT_TOPIC;
+function topics() {
+  const t = [];
+  for (const v of all()) if (!t.includes(topicOf(v))) t.push(topicOf(v));
+  for (const x of extraTopics) if (!t.includes(x)) t.push(x);
+  return t.length ? t : [DEFAULT_TOPIC];
+}
+function topicNow() { const t = topics(); return curTopic === "*" && t.length > 1 ? "*" : t.includes(curTopic) ? curTopic : t[0]; }
+function list() { const t = topicNow(); return all().filter((v) => t === "*" || topicOf(v) === t); }
+function cur() { return videos[curId] || null; }
+function setTopic(t) {
+  curTopic = t; lsSet("raskadrovka-topic", t);
+  if (!list().some((v) => v.id === curId)) curId = (list()[0] || {}).id || null;
+  $("#picker").hidden = true;
+}
+
+// ---------- сохранение ----------
+function touch(v, structural) {
+  v.updatedAt = now();
+  videos[v.id] = v;
+  pending.add(v.id);
+  clearTimeout(timers[v.id]);
+  timers[v.id] = setTimeout(() => flush(v.id), 500);
+  renderReel();
+  if (structural) renderMain(); else refreshTimes();
+}
+async function flush(id) {
+  const v = videos[id];
+  if (!v || !store) { pending.delete(id); return; }
+  try { await store.put(v); } catch { notice("Не получилось сохранить правку. Проверьте связь и попробуйте ещё раз."); }
+  pending.delete(id);
+}
+
+// ---------- данные из хранилища ----------
+function onData(map) {
+  const prevCur = videos[curId];
+  const next = {};
+  for (const [id, v] of Object.entries(map)) {
+    const mine = videos[id];
+    next[id] = mine && pending.has(id) && (mine.updatedAt || 0) >= (v.updatedAt || 0) ? mine : v;
+  }
+  for (const id of pending) if (!next[id] && videos[id]) next[id] = videos[id];
+  videos = next;
+  ready = true;
+  if (!videos[curId]) curId = lsGet("raskadrovka-cur");
+  if (!list().some((v) => v.id === curId)) curId = (list()[0] || {}).id || null;
+  renderReel();
+  const nowCur = videos[curId];
+  if (view === "plan" || !prevCur || !nowCur || prevCur !== nowCur && (prevCur.updatedAt || 0) !== (nowCur.updatedAt || 0)) renderMain();
+}
+
+// ---------- лента роликов ----------
+function renderReel() {
+  const ts = topics(), tn = topicNow();
+  const count = (t) => all().filter((v) => topicOf(v) === t).length;
+  const shots = planShots(), left = shots.filter((x) => !x.s.done).length;
+  const chip = (t, label, n) => `<button class="topic" type="button" data-topic="${esc(t)}" aria-current="${tn === t}">${esc(label)}<span class="n">${n}</span></button>`;
+  $("#topbar").innerHTML = `<span class="tlabel">Темы</span>`
+    + (ts.length > 1 ? (tn === "*" ? `<span class="topic-on">${chip("*", "Все", all().length)}</span>` : chip("*", "Все", all().length)) : "")
+    + ts.map((t) => t !== tn ? chip(t, t, count(t))
+      : `<div class="menu-wrap topic-on">${chip(t, t, count(t))}`
+      + (canWrite ? `<button class="tmore" type="button" data-tmenu aria-expanded="false" aria-controls="tpop" aria-label="Тема «${esc(t)}»: переименовать или удалить" title="Переименовать или удалить тему">▾</button>
+        <div class="vpop tpop" id="tpop" hidden>
+          <div class="mi-l">Название темы<div class="mi-row"><input class="field" id="t-rename" value="${esc(t)}" aria-label="Новое название темы"><button class="btn" type="button" data-tact2="rename">Сохранить</button></div></div>
+          <div class="mi-sep"></div>
+          <button class="mi danger" type="button" data-tact2="del">${count(t) ? `Удалить тему и ${count(t)} ${plural(count(t), "ролик", "ролика", "роликов")}` : "Удалить тему"}</button>
+        </div>` : "") + `</div>`).join("")
+    + (canWrite ? (addingTopic ? `<input class="field topic-in" id="topic-in" placeholder="Название темы, Enter" aria-label="Название новой темы">` : `<button class="topic add" type="button" data-addtopic>+ Тема</button>`) : "")
+    + `<span class="spacer"></span>`
+    + (shots.length ? `<button class="plan-link" type="button" data-plan aria-current="${view === "plan"}">${view === "plan" ? "← К сценариям" : `План съёмки · осталось ${left}`}</button>` : "");
+  $("#reel").innerHTML = (canWrite ? `<button class="clip add" type="button" data-new>+ Новый ролик</button>` : "") + list().map((v) => {
+    const tot = v.blocks.reduce((s, b) => s + secOf(b), 0), g = gapsOf(v);
+    return `<button class="clip st-${esc(v.status)}" type="button" data-open="${esc(v.id)}" aria-current="${view === "video" && v.id === curId}">
+      <span class="ct">${esc(v.title || "Без названия")}</span>
+      <span class="cm"><span class="dot"></span>${esc(STATUSES[v.status] || "")} · ${esc(PLATFORMS[v.platform] || "")}</span>
+      <span class="cm">${tc(tot)}${g ? ` · <span class="gap-n">пропусков ${g}</span>` : ""}</span></button>`;
+  }).join("");
+  if (addingTopic) $("#topic-in")?.focus();
+}
+function openVideo(id) { curId = id; view = "video"; lsSet("raskadrovka-view", view); lsSet("raskadrovka-cur", curId); $("#picker").hidden = true; renderReel(); renderMain(); }
+// перетаскивание карточек мышью (на телефоне — «⋯» → «Раньше / Позже», чтобы не мешать прокрутке ленты пальцем)
+let drag = null, dragJustEnded = false;
+$("#reel").addEventListener("pointerdown", (e) => {
+  const c = e.target.closest("[data-open]");
+  if (!c || !canWrite || e.pointerType === "touch" || e.button !== 0) return;
+  drag = { id: c.dataset.open, el: c, x: e.clientX, on: false, to: null };
+});
+addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x;
+  if (!drag.on && Math.abs(dx) < 6) return;
+  if (!drag.on) { drag.on = true; drag.el.classList.add("dragging"); document.body.classList.add("dragging-clip"); }
+  drag.el.style.transform = `translateX(${dx}px)`;
+  const cards = [...$("#reel").querySelectorAll("[data-open]")], from = cards.indexOf(drag.el);
+  const rest = cards.filter((x) => x !== drag.el);
+  document.querySelectorAll(".drop-before,.drop-after").forEach((x) => x.classList.remove("drop-before", "drop-after"));
+  // новое место = сколько остальных карточек левее указателя
+  const to = rest.filter((x) => { const r = x.getBoundingClientRect(); return e.clientX > r.left + r.width / 2; }).length;
+  drag.to = to;
+  if (to !== from && rest.length) (to < rest.length ? rest[to] : rest[rest.length - 1]).classList.add(to < rest.length ? "drop-before" : "drop-after");
+});
+addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  document.body.classList.remove("dragging-clip");
+  if (!d.on) return;
+  dragJustEnded = true; setTimeout(() => (dragJustEnded = false), 50);
+  d.el.classList.remove("dragging"); d.el.style.transform = "";
+  document.querySelectorAll(".drop-before,.drop-after").forEach((x) => x.classList.remove("drop-before", "drop-after"));
+  if (d.to != null && moveVideo(d.id, d.to)) toast("Порядок роликов изменён");
+});
+$("#reel").addEventListener("click", (e) => {
+  if (dragJustEnded) return;
+  const o = e.target.closest("[data-open]");
+  if (o) return openVideo(o.dataset.open);
+  if (e.target.closest("[data-new]")) { const p = $("#picker"); p.hidden = !p.hidden; if (!p.hidden) p.scrollIntoView({ block: "nearest" }); }
+});
+let topicArmT;
+$("#topbar").addEventListener("click", async (e) => {
+  if (e.target.closest("[data-tmenu]")) { toggleMenu(e.target.closest("[data-tmenu]"), $("#tpop")); if (!$("#tpop").hidden) $("#t-rename").focus(); return; }
+  const ta = e.target.closest("[data-tact2]")?.dataset.tact2, tn = topicNow();
+  if (ta === "rename") {
+    const name = ($("#t-rename").value || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    if (!name || name === tn) { closeMenus(); return; }
+    const vs = list();
+    if (extraTopics.delete(tn)) extraTopics.add(name);
+    vs.forEach((v) => { v.topic = name; touch(v, false); });
+    setTopic(name); renderReel(); renderMain(); toast("Тема переименована: «" + name + "»"); return;
+  }
+  if (ta === "del") {
+    const b = e.target.closest("[data-tact2]"), vs = list();
+    if (!b.classList.contains("armed")) {
+      b.classList.add("armed"); b.textContent = vs.length ? `Точно удалить ${vs.length} ${plural(vs.length, "ролик", "ролика", "роликов")}? Ещё раз` : "Точно удалить тему? Ещё раз";
+      clearTimeout(topicArmT); topicArmT = setTimeout(() => renderReel(), 4000); return;
+    }
+    clearTimeout(topicArmT);
+    for (const v of vs) { delete videos[v.id]; pending.delete(v.id); clearTimeout(timers[v.id]); }
+    extraTopics.delete(tn);
+    setTopic(""); view = "video"; renderReel(); renderMain();
+    try { await Promise.all(vs.map((v) => store?.del(v.id))); toast(vs.length ? `Тема «${tn}» и ${vs.length} ${plural(vs.length, "ролик", "ролика", "роликов")} удалены` : `Тема «${tn}» удалена`); }
+    catch { notice("Не всё удалилось. Обновите страницу и попробуйте ещё раз."); }
+    return;
+  }
+  const t = e.target.closest("[data-topic]");
+  if (t) { setTopic(t.dataset.topic); if (view === "plan" && !planShots().length) view = "video"; renderReel(); renderMain(); return; }
+  if (e.target.closest("[data-addtopic]")) { addingTopic = true; renderReel(); return; }
+  if (e.target.closest("[data-plan]")) { view = view === "plan" ? "video" : "plan"; lsSet("raskadrovka-view", view); $("#picker").hidden = true; renderReel(); renderMain(); }
+});
+$("#topbar").addEventListener("keydown", (e) => {
+  if (e.target.id === "t-rename" && e.key === "Enter") { e.preventDefault(); $('[data-tact2="rename"]').click(); return; }
+  if (e.target.id !== "topic-in") return;
+  if (e.key === "Escape") { addingTopic = false; renderReel(); return; }
+  if (e.key !== "Enter") return;
+  const name = e.target.value.trim().replace(/\s+/g, " ").slice(0, 40);
+  addingTopic = false;
+  if (name) { extraTopics.add(name); setTopic(name); view = "video"; renderReel(); renderMain(); $("#picker").hidden = false; toast("Тема «" + name + "» создана. Выберите заготовку первого ролика"); }
+  else renderReel();
+});
+$("#topbar").addEventListener("focusout", (e) => { if (e.target.id === "topic-in" && addingTopic) setTimeout(() => { if (addingTopic) { addingTopic = false; renderReel(); } }, 150); });
+$("#tpls").innerHTML = TEMPLATES.map((t) => `<button class="tpl" type="button" data-tpl="${t.key}"><b>${esc(t.name)}</b><span>${esc(t.about)}</span></button>`).join("");
+$("#tpls").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tpl]"); if (!b) return;
+  const t = TEMPLATES.find((x) => x.key === b.dataset.tpl);
+  const tn = topicNow();
+  const v = { id: uid(), title: "", topic: tn === "*" ? topics()[0] : tn, platform: t.platform, status: "idea", target: t.target,
+    blocks: t.blocks.map(([part, hint]) => ({ id: uid(), part, hint, say: "", show: "" })),
+    shots: [], titles: [""], thumb: "", notes: "", createdAt: now(), updatedAt: now() };
+  curId = v.id; lsSet("raskadrovka-cur", curId); tab = "script"; view = "video"; lsSet("raskadrovka-view", view);
+  $("#picker").hidden = true;
+  touch(v, true);
+  setTimeout(() => { const ti = $("#f-title"); if (ti) ti.focus(); }, 0);
+});
+$("#picker-close").addEventListener("click", () => ($("#picker").hidden = true));
+function setHelp(open) { const h = $("#help"); h.hidden = !open; $("#help-btn").setAttribute("aria-expanded", String(open)); if (open) h.scrollIntoView({ block: "nearest" }); }
+$("#help-btn").addEventListener("click", () => setHelp($("#help").hidden));
+$("#help-close").addEventListener("click", () => { setHelp(false); $("#help-btn").focus(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#help").hidden && $("#prompter").hidden) setHelp(false); });
+
+// ---------- лист ролика ----------
+function planShots() {
+  const out = [];
+  for (const v of list()) if (v.status !== "done") for (const s of v.shots) if ((s.text || "").trim()) out.push({ v, s });
+  return out;
+}
+function renderPlan(m) {
+  const all = planShots(), groups = {};
+  for (const x of all) (groups[placeOf(x.s)] ||= []).push(x);
+  const order = PLACES.concat(Object.keys(groups).filter((p) => !PLACES.includes(p)));
+  const done = all.filter((x) => x.s.done).length;
+  const html = order.filter((p) => groups[p]).map((p) => {
+    const items = groups[p], d = items.filter((x) => x.s.done).length;
+    if (planHide && d === items.length) return "";
+    return `<section class="pgroup"><h3>${esc(p)} <span class="count">${d} из ${items.length}</span></h3><ul class="shots">${items
+      .filter((x) => !(planHide && x.s.done))
+      .map((x) => `<li class="pshot${x.s.done ? " done" : ""}"><label class="prow"><input type="checkbox" data-pv="${esc(x.v.id)}" data-ps="${esc(x.s.id)}"${x.s.done ? " checked" : ""}${canWrite ? "" : " disabled"}>
+        <span class="pt">${esc(x.s.text)}<span class="pv">${esc(x.v.title || "Без названия")}</span></span></label></li>`).join("")}</ul></section>`;
+  }).join("");
+  m.innerHTML = `<article class="sheet"><div class="sheet-head">
+      <h2 class="plan-h">План съёмки</h2>
+      <p class="plan-lead">${topicNow() === "*" ? "Кадры всех роликов" : "Кадры роликов темы «" + esc(topicNow()) + "»"}, которые ещё не вышли, собраны по местам. Пришли в комнату — сняли всё для неё сразу. Галочка здесь ставится и в самом ролике. Место кадра меняется на вкладке «Кадры» ролика.</p>
+      <div class="meta"><span class="count">Снято ${done} из ${all.length}</span><label class="plan-opt"><input type="checkbox" id="plan-hide"${planHide ? " checked" : ""}> Скрыть снятое</label></div>
+    </div><div class="pane"><div class="pgroups">${html || `<div class="empty">${all.length ? "Всё снято" : "Пока нет кадров. Добавьте их на вкладке «Кадры» в ролике."}</div>`}</div></div></article>`;
+}
+
+function renderMain() {
+  const m = $("#main"), v = cur();
+  if (!ready) { m.innerHTML = `<div class="sheet"><div class="empty">Загружаю ролики…</div></div>`; return; }
+  if (view === "plan" && !planShots().length) view = "video";
+  if (view === "plan") return renderPlan(m);
+  if (!v) {
+    const tn = topicNow();
+    m.innerHTML = `<div class="sheet"><div class="empty"><b>${tn !== "*" && all().length ? "В теме «" + esc(tn) + "» пока нет роликов" : "Здесь будут сценарии ваших роликов"}</b><span>Каждый ролик — монтажный лист: что говорите, что в кадре, сколько секунд. Начните с заготовки.</span>${canWrite ? `<button class="btn primary" type="button" data-act="new">+ Новый ролик</button>` : ""}</div></div>`;
+    return;
+  }
+  const ro = canWrite ? "" : " disabled";
+  const opt = (obj, val) => Object.entries(obj).map(([k, n]) => `<option value="${k}"${k === val ? " selected" : ""}>${esc(n)}</option>`).join("");
+  const short = SHORT[v.platform];
+  m.innerHTML = `<article class="sheet">
+    <div class="sheet-head">
+      <div class="title-row">
+        <textarea class="title-in" id="f-title" data-f="title" rows="1" placeholder="Рабочее название ролика" aria-label="Название ролика"${ro}>${esc(v.title)}</textarea>
+        <div class="menu-wrap"><button class="btn quiet more" type="button" data-act="menu" aria-expanded="false" aria-controls="vpop" aria-label="Действия с роликом" title="Тема, копия, удаление">⋯</button>
+          <div class="vpop" id="vpop" hidden>
+            ${canWrite ? `<label class="mi-l">Тема ролика<select class="field" data-f="topic">${topics().map((t) => `<option${t === topicOf(v) ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
+            <div class="mi-l">Или новая тема<div class="mi-row"><input class="field" id="v-newtopic" placeholder="Название"><button class="btn" type="button" data-act="movetopic">Перенести</button></div></div>
+            <div class="mi-l">Место в ленте<div class="mi-row split"><button class="btn" type="button" data-act="moveleft">← Раньше</button><button class="btn" type="button" data-act="moveright">Позже →</button></div></div>
+            <div class="mi-sep"></div>
+            <button class="mi" type="button" data-act="dup">Сделать копию ролика</button>` : ""}
+            <button class="mi" type="button" data-act="copy">Скопировать сценарий текстом</button>
+            ${canWrite ? `<div class="mi-sep"></div><button class="mi danger" type="button" data-act="delvideo">Удалить ролик</button>` : ""}
+          </div></div>
+      </div>
+      <textarea class="field copybox" id="copybox" hidden readonly aria-label="Сценарий текстом"></textarea>
+      <div class="meta">
+        <label class="lbl">Площадка<select class="field" id="f-platform" data-f="platform"${ro}>${opt(PLATFORMS, v.platform)}</select></label>
+        <label class="lbl">Статус<select class="field" id="f-status" data-f="status"${ro}>${opt(STATUSES, v.status)}</select></label>
+        <label class="lbl">${short ? "Длина, сек" : "Длина, мин"}<input class="field" id="f-target" type="number" min="${short ? 5 : 0.5}" step="${short ? 5 : 0.5}" data-f="target" value="${short ? esc(v.target) : Math.round((v.target / 60) * 10) / 10}"${ro}></label>
+        <div class="meter" id="meter"><div class="mt"><span>Хронометраж</span><span id="m-text"></span></div><div class="bar"><i id="m-bar"></i></div></div>
+        <button class="gaps" type="button" id="gaps" data-act="gotogap" hidden title="Показать первое место в [скобках]"></button>
+      </div>
+      <div id="status-tip"></div>
+      <div class="tabs" role="tablist">
+        ${[["script", "Сценарий"], ["shots", "Кадры"], ["pack", "Упаковка"]].map(([k, n]) => `<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${tab === k}">${n}</button>`).join("")}
+        <span class="spacer"></span>
+        <button class="btn prompt-btn" type="button" data-act="prompter" aria-label="Суфлёр" title="Суфлёр"><span class="pl-t">Суфлёр</span></button>
+      </div>
+    </div>
+    <div class="pane" id="pane">${tab === "shots" ? shotsHtml(v, ro) : tab === "pack" ? packHtml(v, ro) : scriptHtml(v, ro)}</div>
+  </article>`;
+  regrowAll();
+  refreshTimes();
+}
+function regrowAll() { document.querySelectorAll("#main textarea[data-bf], #f-title, .trow textarea, .shot .stext").forEach(grow); }
+document.fonts?.ready?.then(regrowAll);
+let regrowT;
+addEventListener("resize", () => { clearTimeout(regrowT); regrowT = setTimeout(regrowAll, 150); });
+
+function scriptHtml(v, ro) {
+  const parts = (p) => PARTS.concat(PARTS.includes(p) ? [] : [p]).map((x) => `<option${x === p ? " selected" : ""}>${esc(x)}</option>`).join("");
+  return `<div id="hook-tip"></div>
+    <div class="cols" aria-hidden="true"><span>Время · часть</span><span>Говорю</span><span>В кадре</span><span></span></div>
+    <ol class="blocks">${v.blocks.map((b) => `<li class="blk${b.part === "Крючок" ? " hook" : ""}" data-b="${esc(b.id)}">
+      <div class="tc"><span class="t" data-t></span>
+        <select data-bf="part" aria-label="Часть ролика"${ro}>${parts(b.part)}</select>
+        <button class="dbtn" type="button" data-bact="opt" title="Своё время${SHORT[v.platform] ? "" : " и название главы на YouTube"}"><span data-d></span></button>
+        <span class="sec opt${b.sec > 0 ? " has" : ""}">своё время <input type="number" min="0" data-bf="sec" value="${b.sec > 0 ? esc(b.sec) : ""}" placeholder="авто" aria-label="Своё время, секунд"${ro}> с</span>
+        ${SHORT[v.platform] ? "" : `<input class="field chap opt${b.chapter ? " has" : ""}" data-bf="chapter" value="${esc(b.chapter || "")}" placeholder="Глава на YouTube" aria-label="Название главы на YouTube" title="Как назвать главу в описании. Пусто — придумается само"${ro}>`}</div>
+      <label><span class="col-l">Говорю</span><textarea data-bf="say" rows="2" placeholder="${esc(b.hint || "Что говорите")}"${ro}>${esc(b.say)}</textarea></label>
+      <label><span class="col-l">В кадре</span><textarea class="show" data-bf="show" rows="2" placeholder="Что видит зритель"${ro}>${esc(b.show)}</textarea></label>
+      <div class="btools">${canWrite ? `<button class="ib" type="button" data-bact="up" aria-label="Выше">↑</button><button class="ib" type="button" data-bact="down" aria-label="Ниже">↓</button><button class="ib del" type="button" data-bact="del" aria-label="Удалить блок">✕</button>` : ""}</div>
+    </li>`).join("")}</ol>
+    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addblock">+ Блок</button><span class="count">Время считается по словам: около 140 слов в минуту. Текст в [скобках] — пропуск, считается одним словом.</span></div>` : ""}`;
+}
+
+function shotsHtml(v, ro) {
+  const done = v.shots.filter((s) => s.done).length;
+  return `<div class="count">Снято ${done} из ${v.shots.length}</div>
+    <ul class="shots">${v.shots.map((s) => `<li class="shot${s.done ? " done" : ""}" data-s="${esc(s.id)}">
+      <input type="checkbox" data-sf="done"${s.done ? " checked" : ""} aria-label="Снято"${ro}>
+      <textarea class="stext" data-sf="text" rows="1" placeholder="Что снять"${ro}>${esc(s.text)}</textarea>
+      <select data-sf="place" aria-label="Где снимать"${ro}>${PLACES.map((p) => `<option${p === placeOf(s) ? " selected" : ""}>${esc(p)}</option>`).join("")}</select>
+      ${canWrite ? `<button class="ib del" type="button" data-sact="del" aria-label="Удалить кадр">✕</button>` : ""}</li>`).join("")}</ul>
+    ${canWrite ? `<div class="add-row"><button class="btn" type="button" data-act="addshot">+ Кадр</button></div>` : ""}`;
+}
+
+function packHtml(v, ro) {
+  const short = SHORT[v.platform];
+  return `<div class="pack">
+      <div class="titles-box"><h3>Варианты названия</h3>
+        <ul class="titles">${v.titles.map((t, i) => `<li class="trow" data-i="${i}"><textarea class="field" data-tf rows="1" placeholder="Название для ${esc(PLATFORMS[v.platform])}"${ro}>${esc(t)}</textarea><span class="len" data-len></span>${canWrite ? `<button class="ib del" type="button" data-tact="del" aria-label="Удалить вариант">✕</button>` : ""}</li>`).join("")}</ul>
+        ${canWrite ? `<div class="add-row" style="margin-top:8px"><button class="btn" type="button" data-act="addtitle">+ Вариант</button><span class="count">${short ? "Коротко и с интригой: на экране видно 40–50 знаков" : "На YouTube до 100 знаков, в поиске видно около 60"}</span></div>` : ""}
+      </div>
+      <div><h3>${short ? "Первый кадр и обложка" : "Превью"}</h3>
+        <textarea class="field" data-f="thumb" placeholder="Что на картинке, какая надпись, какая эмоция"${ro}>${esc(v.thumb)}</textarea></div>
+      <div><h3>Заметки</h3>
+        <textarea class="field" data-f="notes" placeholder="Что уточнить, ссылки, идеи"${ro}>${esc(v.notes)}</textarea></div>
+    </div>
+    <div class="ytdesc">
+      <h3>${short ? "Подпись к ролику" : "Описание для YouTube"}</h3>
+      <textarea class="field" data-f="desc" placeholder="Пара строк о ролике: о чём серия и что будет дальше"${ro}>${esc(v.desc || "")}</textarea>
+      <pre class="descprev" id="descprev" aria-label="Готовое описание"></pre>
+      <div class="add-row"><button class="btn" type="button" data-act="copydesc">Скопировать описание</button><span class="count" id="chapnote"></span></div>
+    </div>
+    `;
+}
+
+function grow(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + 2 + "px"; }
+
+function refreshTimes() {
+  const v = cur(); if (!v) return;
+  let t = 0;
+  for (const b of v.blocks) {
+    const li = document.querySelector(`.blk[data-b="${CSS.escape(b.id)}"]`);
+    const s = secOf(b);
+    if (li) { li.querySelector("[data-t]").textContent = tc(t); li.querySelector("[data-d]").textContent = (b.sec > 0 ? "" : "≈") + s + " с"; }
+    t += s;
+  }
+  const target = +v.target || 0, mt = $("#m-text"), bar = $("#m-bar"), meter = $("#meter");
+  if (mt) {
+    mt.innerHTML = `<b>${tc(t)}</b> из ${tc(target)}`;
+    bar.style.width = Math.min(100, target ? (t / target) * 100 : 0) + "%";
+    meter.classList.toggle("over", target > 0 && t > target * 1.1);
+  }
+  const tip = $("#hook-tip");
+  if (tip) {
+    const first = v.blocks[0], hs = first ? secOf(first) : 0;
+    const msg = SHORT[v.platform] && first && first.part === "Крючок" && hs > 3 ? `Крючок звучит ≈${hs} с. В коротких роликах зритель решает за 1–2 секунды: оставьте одну фразу.`
+      : !SHORT[v.platform] && first && first.part === "Крючок" && hs > 35 ? `Крючок звучит ≈${hs} с. На YouTube лучше уложиться в 30 секунд.` : "";
+    tip.innerHTML = msg ? `<div class="tip">${esc(msg)}</div>` : "";
+  }
+  const g = gapsOf(v), gb = $("#gaps");
+  if (gb) { gb.hidden = !g; gb.textContent = "Осталось вписать: " + g; }
+  const st = $("#status-tip");
+  if (st) st.innerHTML = g && ["shoot", "edit", "done"].includes(v.status) ? `<div class="tip">Статус «${esc(STATUSES[v.status])}», а в сценарии ещё ${g} ${plural(g, "место", "места", "мест")} в [скобках]. Заполните их до съёмки.</div>` : "";
+  document.querySelectorAll('.blk textarea[data-bf="say"], .blk textarea[data-bf="show"]').forEach((t) => t.classList.toggle("has-gap", gapsIn(t.value) > 0));
+  const dp = $("#descprev");
+  if (dp) {
+    dp.textContent = descText(v);
+    const n = chapters(v).length;
+    $("#chapnote").textContent = SHORT[v.platform] ? "Для коротких роликов главы не нужны" : n >= 3 ? "Глав: " + n + ". YouTube покажет их на шкале ролика" : "YouTube показывает главы, только если их хотя бы три";
+  }
+  document.querySelectorAll(".trow").forEach((r) => {
+    const n = (r.querySelector("[data-tf]").value || "").length, l = r.querySelector("[data-len]");
+    const lim = SHORT[v.platform] ? 50 : 100, soft = SHORT[v.platform] ? 40 : 60;
+    l.textContent = n; l.className = "len" + (n > lim ? " over" : n > soft ? " long" : "");
+  });
+}
+
+// ---------- события листа ----------
+const main = $("#main");
+// галочки — через change: событие input от галочек приходит не во всех браузерах (Safari на iPhone)
+main.addEventListener("change", (e) => {
+  const el = e.target;
+  if (el.type !== "checkbox") return;
+  if (el.id === "plan-hide") { planHide = el.checked; lsSet("raskadrovka-planhide", planHide ? "1" : ""); renderMain(); return; }
+  if (!canWrite) return;
+  if (el.dataset.pv) {
+    const pv = videos[el.dataset.pv]; if (!pv) return;
+    const s = pv.shots.find((x) => x.id === el.dataset.ps); if (!s) return;
+    s.done = el.checked; touch(pv, true); return;
+  }
+  if (el.dataset.sf === "done") {
+    const v = cur(); if (!v) return;
+    const s = v.shots.find((x) => x.id === el.closest("[data-s]").dataset.s); if (!s) return;
+    s.done = el.checked; touch(v, true);
+  }
+});
+main.addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.type === "checkbox") return;
+  const v = cur(); if (!v || !canWrite) return;
+  if (el.dataset.f) {
+    const f = el.dataset.f;
+    if (f === "target") { const n = Math.max(0, +String(el.value).replace(",", ".") || 0); v.target = SHORT[v.platform] ? Math.round(n) : Math.round(n * 60); touch(v, false); return; }
+    if (f === "platform") {
+      const wasShort = !!SHORT[v.platform]; v.platform = el.value;
+      if (!wasShort && SHORT[v.platform] && v.target > 180) v.target = 45;
+      if (wasShort && !SHORT[v.platform] && v.target < 120) v.target = 600;
+      touch(v, true); return;
+    }
+    if (f === "topic") { v.topic = el.value; setTopic(v.topic); curId = v.id; touch(v, true); toast("Ролик перенесён в тему «" + v.topic + "»"); return; }
+    v[f] = el.value;
+    if (f === "title") grow(el);
+    touch(v, false); return;
+  }
+  if (el.dataset.bf) {
+    const b = v.blocks.find((x) => x.id === el.closest("[data-b]").dataset.b);
+    if (el.dataset.bf === "sec") { b.sec = el.value === "" ? 0 : Math.max(0, +el.value || 0); el.closest(".opt").classList.toggle("has", b.sec > 0); }
+    else b[el.dataset.bf] = el.value;
+    if (el.dataset.bf === "chapter") el.classList.toggle("has", !!el.value.trim());
+    if (el.tagName === "TEXTAREA") grow(el);
+    if (el.dataset.bf === "part") el.closest(".blk").classList.toggle("hook", el.value === "Крючок");
+    touch(v, false); return;
+  }
+  if (el.dataset.sf) {
+    const s = v.shots.find((x) => x.id === el.closest("[data-s]").dataset.s);
+    if (el.dataset.sf === "place") { s.place = el.value; touch(v, false); }
+    else { s.text = el.value; grow(el); touch(v, false); }
+    return;
+  }
+  if (el.hasAttribute("data-tf")) { v.titles[+el.closest("[data-i]").dataset.i] = el.value; grow(el); touch(v, false); }
+});
+// названия — в одну строку по смыслу: Enter не делает перенос
+main.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.target.id === "f-title" || e.target.hasAttribute("data-tf") || e.target.classList.contains("stext"))) { e.preventDefault(); e.target.blur(); }
+  if (e.key === "Enter" && e.target.id === "v-newtopic") { e.preventDefault(); main.querySelector('[data-act="movetopic"]')?.click(); }
+});
+
+// ---------- всплывающие меню ----------
+function closeMenus(except) {
+  document.querySelectorAll(".vpop").forEach((p) => { if (p !== except) { p.hidden = true; p.parentElement.querySelector("[aria-expanded]")?.setAttribute("aria-expanded", "false"); } });
+}
+function toggleMenu(btn, pop) { const open = pop.hidden; closeMenus(pop); pop.hidden = !open; btn.setAttribute("aria-expanded", String(open)); }
+document.addEventListener("click", (e) => { if (!e.target.closest(".menu-wrap")) closeMenus(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenus(); });
+$("#file-btn").addEventListener("click", () => toggleMenu($("#file-btn"), $("#file-pop")));
+$("#file-pop").addEventListener("click", (e) => { if (e.target.closest(".mi")) setTimeout(() => closeMenus(), 0); });
+
+let armT;
+main.addEventListener("click", async (e) => {
+  const v = cur();
+  const tb = e.target.closest("[data-tab]");
+  if (tb) { tab = tb.dataset.tab; lsSet("raskadrovka-tab", tab); renderMain(); return; }
+  const act = e.target.closest("[data-act]")?.dataset.act;
+  if (act === "new") { $("#picker").hidden = false; return; }
+  if (!v) return;
+  if (act === "menu") { const b = e.target.closest("[data-act]"); return toggleMenu(b, $("#vpop")); }
+  if (act === "prompter") return openPrompter(v);
+  if (act === "copy") { closeMenus(); return copyScript(v); }
+  if (act === "copydesc") return copyText(descText(v), "Описание скопировано");
+  if (act === "gotogap") {
+    if (tab !== "script") { tab = "script"; lsSet("raskadrovka-tab", tab); renderMain(); }
+    const t = [...main.querySelectorAll('.blk textarea[data-bf="say"], .blk textarea[data-bf="show"]')].find((x) => gapsIn(x.value));
+    if (t) { GAP.lastIndex = 0; const m = GAP.exec(t.value); GAP.lastIndex = 0; t.scrollIntoView({ block: "center" }); t.focus(); if (m) t.setSelectionRange(m.index, m.index + m[0].length); }
+    return;
+  }
+  if (!canWrite) return;
+  if (act === "addblock") { v.blocks.push({ id: uid(), part: "Основная часть", say: "", show: "" }); touch(v, true); const ts = main.querySelectorAll('textarea[data-bf="say"]'); ts[ts.length - 1]?.focus(); return; }
+  if (act === "addshot") { v.shots.push({ id: uid(), text: "", done: false }); touch(v, true); const ts = main.querySelectorAll(".shot .stext"); ts[ts.length - 1]?.focus(); return; }
+  if (act === "addtitle") { v.titles.push(""); touch(v, true); const ts = main.querySelectorAll("[data-tf]"); ts[ts.length - 1]?.focus(); return; }
+  if (act === "moveleft" || act === "moveright") {
+    const i = list().findIndex((x) => x.id === v.id);
+    if (!moveVideo(v.id, act === "moveleft" ? i - 1 : i + 1)) toast(act === "moveleft" ? "Ролик уже первый" : "Ролик уже последний");
+    return;
+  }
+  if (act === "movetopic") {
+    const name = ($("#v-newtopic").value || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    if (!name) { $("#v-newtopic").focus(); return; }
+    v.topic = name; setTopic(name); curId = v.id; closeMenus(); touch(v, true); toast("Ролик перенесён в новую тему «" + name + "»"); return;
+  }
+  if (act === "dup") {
+    closeMenus();
+    const c = JSON.parse(JSON.stringify(v)); c.id = uid(); c.title = (v.title || "Без названия") + " (копия)"; c.createdAt = now();
+    c.blocks.forEach((b) => (b.id = uid())); c.shots.forEach((s) => (s.id = uid()));
+    curId = c.id; lsSet("raskadrovka-cur", curId); touch(c, true); toast("Сделана копия ролика"); return;
+  }
+  if (act === "delvideo") {
+    const b = e.target.closest("[data-act]");
+    if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Точно удалить? Нажмите ещё раз"; clearTimeout(armT); armT = setTimeout(() => { b.classList.remove("armed"); b.textContent = "Удалить ролик"; }, 4000); return; }
+    const id = v.id; delete videos[id]; pending.delete(id); clearTimeout(timers[id]);
+    curId = (list()[0] || {}).id || null;
+    renderReel(); renderMain();
+    try { await store?.del(id); toast("Ролик удалён"); } catch { notice("Не получилось удалить ролик. Обновите страницу и попробуйте ещё раз."); }
+    return;
+  }
+  const bact = e.target.closest("[data-bact]")?.dataset.bact;
+  if (bact === "opt") { const li = e.target.closest(".blk"); li.classList.toggle("open"); if (li.classList.contains("open")) li.querySelector('[data-bf="sec"]')?.focus(); return; }
+  if (bact) {
+    const i = v.blocks.findIndex((x) => x.id === e.target.closest("[data-b]").dataset.b);
+    if (bact === "del") v.blocks.splice(i, 1);
+    else { const j = bact === "up" ? i - 1 : i + 1; if (j < 0 || j >= v.blocks.length) return; [v.blocks[i], v.blocks[j]] = [v.blocks[j], v.blocks[i]]; }
+    touch(v, true); return;
+  }
+  if (e.target.closest("[data-sact]")) { v.shots = v.shots.filter((s) => s.id !== e.target.closest("[data-s]").dataset.s); touch(v, true); return; }
+  if (e.target.closest("[data-tact]")) { v.titles.splice(+e.target.closest("[data-i]").dataset.i, 1); if (!v.titles.length) v.titles.push(""); touch(v, true); }
+});
+
+function chapterName(b) {
+  const own = String(b.chapter || "").replace(GAP, "").trim();
+  if (own) return own;
+  if (b.part !== "Основная часть" && b.part !== "Пример") return b.part;
+  const first = String(b.say || "").replace(GAP, " ").split(/[.!?…]/).find((x) => x.trim()) || "";
+  const w = first.match(/[^\s.,!?:;—–-]+/g) || [];
+  if (!w.length) return b.part;
+  const s = w.slice(0, 5).join(" ");
+  return s[0].toUpperCase() + s.slice(1) + (w.length > 5 ? "…" : "");
+}
+function chapters(v) {
+  // правила YouTube: первая глава с 00:00, глав не меньше трёх, каждая не короче 10 секунд
+  const out = []; let t = 0;
+  for (const b of v.blocks) {
+    const name = chapterName(b), last = out[out.length - 1];
+    if (!last) out.push({ t: 0, name });
+    else if (name !== last.name && t - last.t >= 10) out.push({ t, name });
+    t += secOf(b);
+  }
+  return out;
+}
+function descText(v) {
+  const lines = [];
+  const d = String(v.desc || "").trim();
+  if (d) lines.push(d);
+  if (!SHORT[v.platform]) {
+    const ch = chapters(v);
+    if (ch.length) { if (lines.length) lines.push(""); for (const c of ch) lines.push(tc(c.t) + " " + c.name); }
+  }
+  return lines.join("\n") || "Впишите пару строк выше — здесь появится готовое описание с главами.";
+}
+
+function scriptText(v) {
+  let t = 0;
+  const out = [(v.title || "Без названия") + " — " + (PLATFORMS[v.platform] || "") + ", цель " + tc(+v.target || 0), ""];
+  for (const b of v.blocks) {
+    out.push("[" + tc(t) + "] " + b.part.toUpperCase());
+    if (b.say) out.push(b.say);
+    if (b.show) out.push("В кадре: " + b.show);
+    out.push(""); t += secOf(b);
+  }
+  out.push("Итого ≈ " + tc(t));
+  return out.join("\n");
+}
+function copyScript(v) { return copyText(scriptText(v), "Сценарий скопирован"); }
+async function copyText(text, ok) {
+  try { await navigator.clipboard.writeText(text); toast(ok); }
+  catch { const box = $("#copybox"); if (!box) return; box.hidden = false; box.value = text; box.focus(); box.select(); toast("Текст выделен — скопируйте его"); }
+}
+
+// ---------- суфлёр ----------
+let pPlay = false, pLast = 0, pStart = 0, pRaf = 0, wake = null;
+function openPrompter(v) {
+  const txt = v.blocks.filter((b) => b.say.trim()).map((b) => `<p><span class="pl">${esc(b.part)}</span>${esc(b.say).replace(/\n/g, "<br>")}</p>`).join("");
+  $("#p-text").innerHTML = txt || "<p>В блоках пока нет текста. Заполните колонку «Говорю».</p>";
+  const size = +(lsGet("raskadrovka-psize") || 40), speed = +(lsGet("raskadrovka-pspeed") || 45);
+  $("#p-size").value = size; $("#p-speed").value = speed; $("#p-text").style.setProperty("--psize", size + "px");
+  $("#prompter").hidden = false; $("#p-scroll").scrollTop = 0; pStart = 0; $("#p-time").textContent = "00:00";
+  setPlay(false);
+  document.documentElement.style.overflow = "hidden";
+}
+function closePrompter() { setPlay(false); $("#prompter").hidden = true; document.documentElement.style.overflow = ""; }
+async function setPlay(on) {
+  pPlay = on; $("#p-play").textContent = on ? "Пауза" : "Пуск";
+  cancelAnimationFrame(pRaf);
+  if (on) {
+    pLast = performance.now(); pRaf = requestAnimationFrame(step);
+    try { wake = await navigator.wakeLock?.request("screen"); } catch { wake = null; }
+  } else { try { await wake?.release(); } catch {} wake = null; }
+}
+let pAcc = 0;
+function step(ts) {
+  const dt = Math.min(0.1, (ts - pLast) / 1000); pLast = ts;
+  const sc = $("#p-scroll");
+  pAcc += +$("#p-speed").value * dt;
+  if (pAcc >= 1) { sc.scrollTop += Math.floor(pAcc); pAcc -= Math.floor(pAcc); }
+  pStart += dt; $("#p-time").textContent = tc(pStart);
+  if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) return setPlay(false);
+  if (pPlay) pRaf = requestAnimationFrame(step);
+}
+$("#p-play").addEventListener("click", () => setPlay(!pPlay));
+$("#p-close").addEventListener("click", closePrompter);
+$("#p-size").addEventListener("input", (e) => { $("#p-text").style.setProperty("--psize", e.target.value + "px"); lsSet("raskadrovka-psize", e.target.value); });
+$("#p-speed").addEventListener("input", (e) => lsSet("raskadrovka-pspeed", e.target.value));
+$("#p-mirror").addEventListener("change", (e) => $("#prompter").classList.toggle("mirror", e.target.checked));
+$("#p-scroll").addEventListener("click", () => setPlay(!pPlay));
+document.addEventListener("keydown", (e) => {
+  if ($("#prompter").hidden) return;
+  if (e.key === "Escape") { e.preventDefault(); closePrompter(); }
+  else if (e.key === " ") { e.preventDefault(); setPlay(!pPlay); }
+  else if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); const s = $("#p-speed"); s.value = +s.value + (e.key === "ArrowUp" ? 5 : -5); lsSet("raskadrovka-pspeed", s.value); }
+});
+
+// ---------- тема ----------
+(function () {
+  const saved = lsGet("raskadrovka-theme");
+  if (saved) document.documentElement.dataset.theme = saved;
+  $("#theme-btn").addEventListener("click", () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    const t = dark ? "light" : "dark"; document.documentElement.dataset.theme = t; lsSet("raskadrovka-theme", t);
+  });
+})();
+
+// ---------- хранилище: офлайн (браузер) ----------
+function offlineStore() {
+  const KEY = "raskadrovka-v1";
+  let st = { videos: {}, deleted: {} }, ok = true;
+  try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); st = { videos: s.videos || {}, deleted: s.deleted || {} }; } } catch { ok = false; }
+  function mergeIn(data) {
+    let n = 0;
+    for (const x of data.videos || []) {
+      if (!x || !x.id) continue;
+      const at = x.updatedAt || x.createdAt || 0;
+      if ((st.deleted[x.id] || 0) >= at) continue;
+      const c = st.videos[x.id];
+      if (!c || (c.updatedAt || 0) < at) { st.videos[x.id] = x; n++; }
+    }
+    for (const [id, at] of Object.entries(data.deleted || {})) {
+      if ((st.deleted[id] || 0) < at) st.deleted[id] = at;
+      if (st.videos[id] && (st.videos[id].updatedAt || 0) <= at) { delete st.videos[id]; n++; }
+    }
+    return n;
+  }
+  mergeIn(SEED);
+  function save() {
+    if (ok) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { ok = false; } }
+    if (!ok) notice("Браузер не даёт сохранять правки в этом файле. Нажимайте «Сохранить в файл», чтобы ничего не потерять.");
+  }
+  save();
+  setTimeout(() => onData(JSON.parse(JSON.stringify(st.videos))), 0);
+  return {
+    put: async (v) => { st.videos[v.id] = JSON.parse(JSON.stringify(v)); delete st.deleted[v.id]; save(); },
+    del: async (id) => { delete st.videos[id]; st.deleted[id] = now(); save(); },
+    exportData: () => ({ videos: Object.values(st.videos), deleted: st.deleted }),
+    importData: (d) => { const n = mergeIn(d); save(); onData(JSON.parse(JSON.stringify(st.videos))); return n; }
+  };
+}
+
+// ---------- хранилище: онлайн (база страницы на claude.ai) ----------
+async function onlineStore() {
+  const db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+  if (!db) return null;
+  try { const user = await window.claude.use("user"); if (user && (await user.can("data.write")) === false) { canWrite = false; renderReel(); renderMain(); } } catch {}
+  const timer = setTimeout(() => { if (!ready) notice("База роликов долго не отвечает. Обновите страницу."); }, 10000);
+  db.collection("videos").onSnapshot((snap) => {
+    clearTimeout(timer); notice("");
+    onData(Object.fromEntries(snap.docs.map((d) => [d.id, { id: d.id, ...normalize(d.data()) }])));
+  }, () => notice("Связь с базой роликов прервалась. Обновите страницу."));
+  const strip = ({ id, ...rest }) => rest;
+  return { put: (v) => db.collection("videos").doc(v.id).set(strip(v)), del: (id) => db.collection("videos").doc(id).delete() };
+}
+function normalize(v) {
+  return { title: "", topic: "", platform: "youtube", status: "idea", target: 300, titles: [""], thumb: "", notes: "", desc: "", ...v,
+    blocks: Array.isArray(v.blocks) ? v.blocks : [], shots: Array.isArray(v.shots) ? v.shots : [] };
+}
+
+renderReel(); renderMain();
+if (MODE === "offline") {
+  store = offlineStore();
+  $("#export-btn").addEventListener("click", () => {
+    const d = new Date(), pad = (n) => String(n).padStart(2, "0");
+    const name = "rolik-po-shagam-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".json";
+    const blob = new Blob([JSON.stringify(store.exportData(), null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast("Файл " + name + " сохранён в «Загрузки»");
+  });
+  $("#import-btn").addEventListener("click", () => $("#import-file").click());
+  $("#import-file").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { const n = store.importData(JSON.parse(await f.text())); notice(""); toast(n ? "Добавлено и обновлено роликов: " + n : "Всё и так совпадает"); }
+    catch { notice("Не получилось прочитать файл. Нужен файл, сохранённый кнопкой «Сохранить в файл», или data.json из папки раскадровки."); }
+  });
+} else {
+  onlineStore().then((s) => {
+    store = s;
+    if (!s) { ready = true; canWrite = false; renderReel(); renderMain(); notice("Ролики хранятся в базе этой страницы. Она открывается на claude.ai, когда вы вошли в аккаунт. Без входа есть офлайн-файл «Раскадровка.html»."); }
+  });
+  (async () => {
+    const fileWrap = $("#file-btn").parentElement;
+    fileWrap.hidden = true; // в меню «Файл» на странице только скачивание — показываем, если оно доступно
+    const downloads = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    const btn = $("#download-btn");
+    if (!downloads || !btn) return;
+    fileWrap.hidden = false;
+    btn.addEventListener("click", async () => {
+      if (!ready) { toast("Ролики ещё загружаются"); return; }
+      const d = new Date(), pad = (n) => String(n).padStart(2, "0");
+      const filename = "rolik-po-shagam-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".json";
+      const data = JSON.stringify({ videos: list(), deleted: {} }, null, 2);
+      try { await downloads.save({ filename, data }); toast("Файл " + filename + " сохранён"); }
+      catch { toast("Файл не сохранён"); }
+    });
+  })();
+}
+</script>
+</body>
+</html>
+
